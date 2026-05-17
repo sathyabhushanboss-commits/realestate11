@@ -30,6 +30,7 @@ export default function Navbar() {
               priority
               className="object-contain"
             />
+
           </div>
 
           {/* BRAND */}
@@ -44,6 +45,7 @@ export default function Navbar() {
             </p>
 
           </div>
+
         </Link>
 
         {/* DESKTOP NAV */}
@@ -111,6 +113,7 @@ export default function Navbar() {
           <span className="w-7 h-[3px] bg-[#9B1C1C] rounded-full"></span>
 
         </button>
+
       </div>
 
       {/* MOBILE MENU */}
@@ -120,37 +123,56 @@ export default function Navbar() {
 
           <nav className="flex flex-col gap-5 text-[#4A1F12] font-medium text-lg">
 
-            <Link href="/">
+            <Link
+              href="/"
+              onClick={() => setOpen(false)}
+            >
               Home
             </Link>
 
-            <Link href="/about">
+            <Link
+              href="/about"
+              onClick={() => setOpen(false)}
+            >
               About
             </Link>
 
-            <Link href="/properties">
+            <Link
+              href="/properties"
+              onClick={() => setOpen(false)}
+            >
               Properties
             </Link>
 
-            <Link href="/blog">
+            <Link
+              href="/blog"
+              onClick={() => setOpen(false)}
+            >
               Blog
             </Link>
 
-            <Link href="/contact">
+            <Link
+              href="/contact"
+              onClick={() => setOpen(false)}
+            >
               Contact
             </Link>
 
             {/* CTA */}
             <Link
               href="/appointment"
+              onClick={() => setOpen(false)}
               className="bg-[#9B1C1C] text-white text-center py-3 rounded-xl mt-3"
             >
               Book Appointment
             </Link>
 
           </nav>
+
         </div>
+
       )}
+
     </header>
   )
 }
