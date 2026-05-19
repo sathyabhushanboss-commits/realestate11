@@ -162,7 +162,7 @@ export default function Hero() {
   ]
 
   return (
-    <section className="relative overflow-hidden bg-[#F8F6F2] py-20 lg:py-28">
+    <section className="relative overflow-hidden bg-[#F8F6F2] pt-0 pb-20 lg:pb-28 -mt-0">
       {/* BACKGROUND EFFECTS */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-[-250px] right-[-250px] w-[700px] h-[700px] rounded-full bg-[#D4A017]/20 blur-3xl animate-pulse"></div>
