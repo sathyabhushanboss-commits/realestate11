@@ -2,12 +2,21 @@
 
 import { useEffect, useRef } from 'react'
 
-export default function ParticleCursor() {
+type Particle = {
+  x: number
+  y: number
+  size: number
+  speedX: number
+  speedY: number
+  life: number
+  color: string
+}
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+export default function ParticleCursor() {
+  const canvasRef =
+    useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-
     const canvas = canvasRef.current
 
     if (!canvas) return
@@ -16,12 +25,12 @@ export default function ParticleCursor() {
 
     if (!ctx) return
 
-    let particles: any[] = []
+    let animationFrameId: number
 
-    const mouse = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    }
+    let particles: Particle[] = []
+
+    // PERFORMANCE LIMIT
+    const MAX_PARTICLES = 80
 
     // CANVAS SIZE
     const resizeCanvas = () => {
@@ -31,87 +40,133 @@ export default function ParticleCursor() {
 
     resizeCanvas()
 
-    window.addEventListener('resize', resizeCanvas)
-
     // CREATE PARTICLES
-    const createParticles = (x: number, y: number) => {
+    const createParticles = (
+      x: number,
+      y: number
+    ) => {
+      // LIMIT PARTICLES
+      if (
+        particles.length >
+        MAX_PARTICLES
+      ) {
+        particles.splice(
+          0,
+          particles.length -
+            MAX_PARTICLES
+        )
+      }
 
-      for (let i = 0; i < 4; i++) {
-
+      for (let i = 0; i < 2; i++) {
         particles.push({
-
           x,
           y,
 
-          size: Math.random() * 8 + 2,
+          size:
+            Math.random() * 4 + 1,
 
-          speedX: (Math.random() - 0.5) * 3,
-          speedY: (Math.random() - 0.5) * 3,
+          speedX:
+            (Math.random() - 0.5) *
+            1.5,
 
-          life: 100,
+          speedY:
+            (Math.random() - 0.5) *
+            1.5,
+
+          life: 35,
+
+          color:
+            Math.random() > 0.5
+              ? '#9B1C1C'
+              : '#D4A017',
         })
       }
     }
 
-    // DESKTOP
-    const handleMouseMove = (e: MouseEvent) => {
-
-      mouse.x = e.clientX
-      mouse.y = e.clientY
-
-      createParticles(mouse.x, mouse.y)
+    // MOUSE MOVE
+    const handleMouseMove = (
+      e: MouseEvent
+    ) => {
+      createParticles(
+        e.clientX,
+        e.clientY
+      )
     }
 
-    // MOBILE
-    const handleTouchMove = (e: TouchEvent) => {
-
+    // TOUCH MOVE
+    const handleTouchMove = (
+      e: TouchEvent
+    ) => {
       const touch = e.touches[0]
 
       if (!touch) return
 
-      mouse.x = touch.clientX
-      mouse.y = touch.clientY
-
-      createParticles(mouse.x, mouse.y)
+      createParticles(
+        touch.clientX,
+        touch.clientY
+      )
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
+    // EVENTS
+    window.addEventListener(
+      'mousemove',
+      handleMouseMove
+    )
 
-    window.addEventListener('touchmove', handleTouchMove)
+    window.addEventListener(
+      'touchmove',
+      handleTouchMove,
+      {
+        passive: true,
+      }
+    )
+
+    window.addEventListener(
+      'resize',
+      resizeCanvas
+    )
 
     // ANIMATION
     const animate = () => {
+      ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      )
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      particles.forEach((particle, index) => {
-
+      particles.forEach((particle) => {
         particle.x += particle.speedX
+
         particle.y += particle.speedY
 
-        particle.life -= 1
+        particle.life--
+
+        // SIMPLE OPACITY
+        const opacity =
+          particle.life / 35
 
         ctx.beginPath()
 
-        const gradient = ctx.createRadialGradient(
-          particle.x,
-          particle.y,
-          0,
-          particle.x,
-          particle.y,
-          particle.size
-        )
+        // LIGHT GLOW
+        ctx.shadowBlur = 10
 
-        // RUBY RED
-        gradient.addColorStop(0, 'rgba(155,28,28,0.95)')
+        ctx.shadowColor =
+          particle.color
 
-        // GOLD
-        gradient.addColorStop(0.5, 'rgba(212,160,23,0.7)')
+        ctx.fillStyle =
+          particle.color
+            .replace(
+              ')',
+              `, ${opacity})`
+            )
+            .replace(
+              'rgb',
+              'rgba'
+            ) || particle.color
 
-        // ROSE GOLD
-        gradient.addColorStop(1, 'rgba(183,110,121,0)')
-
-        ctx.fillStyle = gradient
+        // RUBY RED + GOLD
+        ctx.globalAlpha = opacity
 
         ctx.arc(
           particle.x,
@@ -122,34 +177,57 @@ export default function ParticleCursor() {
         )
 
         ctx.fill()
-
-        // REMOVE
-        if (particle.life <= 0) {
-          particles.splice(index, 1)
-        }
       })
 
-      requestAnimationFrame(animate)
+      // RESET
+      ctx.globalAlpha = 1
+      ctx.shadowBlur = 0
+
+      // REMOVE DEAD
+      particles = particles.filter(
+        (particle) =>
+          particle.life > 0
+      )
+
+      animationFrameId =
+        requestAnimationFrame(
+          animate
+        )
     }
 
     animate()
 
     return () => {
+      cancelAnimationFrame(
+        animationFrameId
+      )
 
-      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener(
+        'mousemove',
+        handleMouseMove
+      )
 
-      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener(
+        'touchmove',
+        handleTouchMove
+      )
 
-      window.removeEventListener('resize', resizeCanvas)
+      window.removeEventListener(
+        'resize',
+        resizeCanvas
+      )
     }
-
   }, [])
 
   return (
-
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[1]"
+      className="
+        fixed
+        inset-0
+        pointer-events-none
+        z-[9998]
+      "
     />
   )
 }

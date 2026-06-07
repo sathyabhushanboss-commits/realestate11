@@ -58,3 +58,14 @@ body {
     transform: translateX(-50%);
   }
 }
+@media (min-width: 768px) {
+  * {
+    cursor: none;
+  }
+}
+
+html,
+body {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
