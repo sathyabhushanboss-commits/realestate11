@@ -185,46 +185,43 @@ export default function Hero() {
     },
   ]
 
-  const featuredProperties = [
+  // Luxury Gallery Items
+  const luxuryGallery = [
     {
       id: 1,
-      title: '1500 sq ft Residential Plot',
-      location: 'Doddakanahalli, Bengaluru',
-      price: 'On Request',
+      title: 'Modern Villa Interior',
       image: '/properties/set1.jpeg',
-      sqft: '1500 sq ft',
-      year: '2025',
-      description: 'Prime residential plot in Doddakanahalli, Bengaluru. Close to IT hubs, schools, and hospitals.',
+      category: 'Interior Design',
     },
     {
       id: 2,
-      title: '4800 sq ft Land with 16 Units',
-      location: 'Kasavanahalli, Bengaluru',
-      price: 'On Request',
+      title: 'Luxury Living Room',
       image: '/properties/set2.jpeg',
-      sqft: '4800 sq ft',
-      year: '2025',
-      description: '4800 sq ft land featuring 16 ready 2BHK units. Excellent rental yield and investment potential.',
+      category: 'Living Spaces',
     },
     {
       id: 3,
-      title: 'Koramangala Premium Property',
-      location: 'Koramangala, Bengaluru',
-      price: 'On Request',
+      title: 'Premium Kitchen Design',
       image: '/properties/set3.1.jpeg',
-      sqft: '600 sq ft land | 3400 sq ft built-up',
-      year: '2018',
-      description: 'Premium property in Koramangala with 600 sq ft land and 3400 sq ft built-up area.',
+      category: 'Kitchen',
     },
     {
       id: 4,
-      title: 'Legacy Commercial Building',
-      location: 'Koramangala, Bengaluru',
-      price: 'On Request',
+      title: 'Elegant Bedroom',
       image: '/properties/set4.jpeg',
-      sqft: 'Commercial Building',
-      year: '2005',
-      description: 'Well-maintained commercial building in Koramangala. Perfect for retail, office, or redevelopment.',
+      category: 'Bedroom',
+    },
+    {
+      id: 5,
+      title: 'Luxury Bathroom',
+      image: '/properties/set1.jpeg',
+      category: 'Bathroom',
+    },
+    {
+      id: 6,
+      title: 'Modern Office Space',
+      image: '/properties/set2.jpeg',
+      category: 'Commercial',
     },
   ]
 
@@ -457,27 +454,28 @@ export default function Hero() {
             </div>
           </div>
 
+          {/* LUXURY GALLERY SECTION - This is the only gallery section now */}
           <div className="mt-24 md:mt-32">
             <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
               <div className="inline-flex items-center gap-2 md:gap-3 bg-white/80 backdrop-blur-xl border border-[#D4A017]/20 rounded-full px-4 md:px-5 py-2 shadow-lg">
                 <div className="w-2 h-2 rounded-full bg-[#D4A017] animate-pulse"></div>
-                <p className="uppercase tracking-[3px] md:tracking-[5px] text-[#9B1C1C] text-xs md:text-sm font-bold">Featured Projects</p>
+                <p className="uppercase tracking-[3px] md:tracking-[5px] text-[#9B1C1C] text-xs md:text-sm font-bold">Luxury Gallery</p>
               </div>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-[#9B1C1C] mt-5 md:mt-6">
-                Our Premium<span className="text-[#D4A017]"> Properties</span>
+                Premium <span className="text-[#D4A017]">Design Portfolio</span>
               </h2>
               <p className="mt-3 md:mt-4 text-base md:text-lg text-[#4A1F12]/70">
-                Discover exclusive real estate opportunities across Bengaluru's prime locations
+                Explore our collection of luxury interiors, modern architecture, and premium living spaces
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-              {featuredProperties.map((property) => (
-                <div key={property.id} className="group bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
-                  <div className="relative h-48 md:h-56 overflow-hidden bg-gray-100">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+              {luxuryGallery.map((item) => (
+                <div key={item.id} className="group relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                  <div className="relative h-48 md:h-64 lg:h-72 overflow-hidden bg-gray-100">
                     <Image
-                      src={property.image}
-                      alt={property.title}
+                      src={item.image}
+                      alt={item.title}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-700"
                       onError={(e) => {
@@ -487,34 +485,28 @@ export default function Hero() {
                         if (parent) {
                           const fallback = document.createElement('div');
                           fallback.className = 'w-full h-full flex items-center justify-center bg-gradient-to-br from-[#9B1C1C]/10 to-[#D4A017]/10';
-                          fallback.innerHTML = '<p class="text-[#9B1C1C] font-semibold text-sm">Image Coming Soon</p>';
+                          fallback.innerHTML = `<p class="text-[#9B1C1C] font-semibold text-sm">${item.category}</p>`;
                           parent.appendChild(fallback);
                         }
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                    <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-full px-2 md:px-3 py-0.5 md:py-1 text-xs font-bold text-[#9B1C1C]">
-                      {property.year}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 text-center">
+                        <p className="text-[#9B1C1C] font-bold text-xs md:text-sm">{item.category}</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-4 md:p-5">
-                    <h3 className="text-lg md:text-xl font-bold text-[#9B1C1C] line-clamp-1">{property.title}</h3>
-                    <p className="text-xs md:text-sm text-[#D4A017] font-semibold mt-1">{property.location}</p>
-                    <p className="text-xs md:text-sm text-gray-600 mt-2 line-clamp-2">{property.description}</p>
-                    <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                      <span className="text-xs text-gray-500">{property.sqft}</span>
-                      <Link href={`/properties/${property.id}`} className="text-sm font-bold text-[#9B1C1C] hover:text-[#D4A017] transition">
-                        Know More →
-                      </Link>
-                    </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <h4 className="text-white font-bold text-sm md:text-base">{item.title}</h4>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="text-center mt-10 md:mt-12">
-              <Link href="/properties" className="inline-flex items-center gap-2 bg-[#9B1C1C] hover:bg-[#7E1717] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold shadow-lg transition-all duration-500 hover:scale-105">
-                View All Properties
+              <Link href="/gallery" className="inline-flex items-center gap-2 bg-[#9B1C1C] hover:bg-[#7E1717] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold shadow-lg transition-all duration-500 hover:scale-105">
+                View Full Gallery
                 <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

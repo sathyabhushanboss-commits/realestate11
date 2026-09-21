@@ -2,7 +2,7 @@ import Hero from '@/components/Hero'
 import TrustedSection from '@/components/TrustedSection'
 import FloatingStats from '@/components/FloatingStats'
 import StatsSection from '@/components/StatsSection'
-import FeaturedProperties from '@/components/FeaturedProperties'
+
 import Amenities from '@/components/Amenities'
 import GallerySection from '@/components/GallerySection'
 import VideoShowcase from '@/components/VideoShowcase'
@@ -25,7 +25,7 @@ export default function HomePage() {
 
       <StatsSection />
 
-      <FeaturedProperties />
+     
 
       <Amenities />
 
