@@ -1,52 +1,46 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { connectDB } from '@/lib/db'
+import { Property } from '@/lib/models'
+import { getSession, requireApiSession } from '@/lib/auth'
+import { ensurePropertiesSeeded, propertyInput, toPropertyJSON } from '@/lib/properties'
 
-export async function GET() {
-  const properties = [
-    {
-      _id: '1',
-      title: '1500 sq ft Residential Plot',
-      location: 'Doddakanahalli, Bengaluru',
-      price: 'On Request',
-      images: ['/properties/set1.jpeg'],
-      measurement: '1500 sq ft',
-      bedrooms: 'Residential Plot',
-      description: 'Prime residential plot in Doddakanahalli, Bengaluru. Close to IT hubs, schools, hospitals.',
-      year: '2025',
-    },
-    {
-      _id: '2',
-      title: '4800 sq ft Land with 16 Units',
-      location: 'Kasavanahalli, Bengaluru',
-      price: 'On Request',
-      images: ['/properties/set2.jpeg'],
-      measurement: '4800 sq ft',
-      bedrooms: '16 Units of 2BHK',
-      description: '4800 sq ft land featuring 16 ready 2BHK units. Excellent rental yield.',
-      year: '2025',
-    },
-    {
-      _id: '3',
-      title: 'Koramangala Premium Property',
-      location: 'Koramangala, Bengaluru',
-      price: 'On Request',
-      images: ['/properties/set3.1.jpeg', '/properties/set3.jpeg'],
-      measurement: '600 sq ft land | 3400 sq ft built-up',
-      bedrooms: '4 BHK + Commercial Space',
-      description: 'Premium property in Koramangala with 600 sq ft land and 3400 sq ft built-up area.',
-      year: '2018',
-    },
-    {
-      _id: '4',
-      title: 'Legacy Commercial Building',
-      location: 'Koramangala, Bengaluru',
-      price: 'On Request',
-      images: ['/properties/set4.jpeg'],
-      measurement: 'Commercial Building',
-      bedrooms: 'Commercial Space',
-      description: 'Well-maintained commercial building in Koramangala.',
-      year: '2005',
-    },
-  ]
+// GET /api/properties?q=koramangala&type=Villa&status=all
+export async function GET(request: NextRequest) {
+  await ensurePropertiesSeeded()
+  const params = request.nextUrl.searchParams
+  const session = await getSession()
 
-  return NextResponse.json(properties)
+  const filter: Record<string, unknown> = {}
+  // Visitors only ever see published and sold listings; admins can ask for everything
+  const status = params.get('status')
+  if (session?.role === 'admin' && status) {
+    if (status !== 'all') filter.status = status
+  } else {
+    filter.status = { $ne: 'draft' }
+  }
+
+  const q = params.get('q')?.trim()
+  if (q) {
+    const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+    filter.$or = [{ title: rx }, { location: rx }, { description: rx }]
+  }
+  const type = params.get('type')
+  if (type) filter.propertyType = type
+
+  const docs = await Property.find(filter).sort({ featured: -1, createdAt: -1 }).lean()
+  return NextResponse.json(docs.map(toPropertyJSON))
+}
+
+export async function POST(request: NextRequest) {
+  const { error } = await requireApiSession('admin')
+  if (error) return error
+
+  const parsed = propertyInput.safeParse(await request.json().catch(() => null))
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
+  }
+
+  await connectDB()
+  const doc = await Property.create(parsed.data)
+  return NextResponse.json(toPropertyJSON(doc.toObject()), { status: 201 })
 }

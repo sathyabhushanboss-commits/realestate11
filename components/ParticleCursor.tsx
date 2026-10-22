@@ -21,6 +21,12 @@ export default function ParticleCursor() {
 
     if (!canvas) return
 
+    // Only on mouse devices, and never when the user prefers reduced motion
+    if (
+      !window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) return
+
     const ctx = canvas.getContext('2d')
 
     if (!ctx) return
@@ -93,19 +99,6 @@ export default function ParticleCursor() {
       )
     }
 
-    // TOUCH MOVE
-    const handleTouchMove = (
-      e: TouchEvent
-    ) => {
-      const touch = e.touches[0]
-
-      if (!touch) return
-
-      createParticles(
-        touch.clientX,
-        touch.clientY
-      )
-    }
 
     // EVENTS
     window.addEventListener(
@@ -113,13 +106,6 @@ export default function ParticleCursor() {
       handleMouseMove
     )
 
-    window.addEventListener(
-      'touchmove',
-      handleTouchMove,
-      {
-        passive: true,
-      }
-    )
 
     window.addEventListener(
       'resize',
@@ -207,10 +193,6 @@ export default function ParticleCursor() {
         handleMouseMove
       )
 
-      window.removeEventListener(
-        'touchmove',
-        handleTouchMove
-      )
 
       window.removeEventListener(
         'resize',

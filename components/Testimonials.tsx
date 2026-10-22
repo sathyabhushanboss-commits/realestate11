@@ -1,136 +1,60 @@
-'use client'
+import SectionHeading from './SectionHeading'
+import Reveal from './Reveal'
 
-const testimonials = [
+const TESTIMONIALS = [
   {
     name: 'Rahul Sharma',
     role: 'Villa Owner',
-    text: 'Sri Megha Lakshmi delivered an exceptional luxury living experience with premium quality construction and vastu-perfect layouts.',
+    text: 'Sri Megha Lakshmi delivered an exceptional living experience with premium quality construction and vastu-perfect layouts.',
   },
-
   {
     name: 'Priya Reddy',
     role: 'Apartment Buyer',
-    text: 'The spacious layouts, modern amenities, and premium support made our home-buying journey seamless and luxurious.',
+    text: 'The spacious layouts, modern amenities and attentive support made our home-buying journey seamless.',
   },
-
   {
     name: 'Arjun Mehta',
     role: 'Investor',
-    text: 'One of the best luxury real estate investments in Bangalore. Excellent appreciation value and premium craftsmanship.',
+    text: 'One of the best real estate investments I have made in Bangalore. Excellent appreciation and fine craftsmanship.',
   },
 ]
 
 export default function Testimonials() {
-
   return (
+    <section className="section bg-sand/60">
+      <div className="container-x">
+        <SectionHeading
+          eyebrow="Client Stories"
+          title={
+            <>
+              Trusted by <em className="text-gold-deep">homeowners</em>
+            </>
+          }
+        />
 
-    <section className="relative py-32 px-4 md:px-6 overflow-hidden bg-[#F8F6F2]">
-
-      {/* BACKGROUND */}
-      <div className="absolute inset-0 overflow-hidden">
-
-        <div className="absolute top-[-200px] right-[-200px] w-[700px] h-[700px] rounded-full bg-[#D4A017]/10 blur-3xl"></div>
-
-        <div className="absolute bottom-[-250px] left-[-250px] w-[700px] h-[700px] rounded-full bg-[#9B1C1C]/10 blur-3xl"></div>
-
-      </div>
-
-      <div className="relative max-w-7xl mx-auto">
-
-        {/* HEADING */}
-        <div className="text-center">
-
-          <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-xl border border-[#D4A017]/20 rounded-full px-5 py-3 shadow-xl">
-
-            <div className="w-3 h-3 rounded-full bg-[#D4A017] animate-pulse"></div>
-
-            <p className="uppercase tracking-[5px] text-[#9B1C1C] text-xs md:text-sm font-semibold">
-              Client Testimonials
-            </p>
-
-          </div>
-
-          <h2 className="mt-8 text-5xl md:text-7xl font-black text-[#9B1C1C] leading-tight">
-
-            Trusted By
-            <br />
-
-            <span className="text-[#D4A017]">
-              Luxury Homeowners
-            </span>
-
-          </h2>
-
-          <p className="max-w-3xl mx-auto mt-8 text-lg md:text-2xl text-[#4A1F12]/70 leading-relaxed">
-
-            Hear what our clients say about their premium
-            real estate journey with Sri Megha Lakshmi.
-
-          </p>
-
-        </div>
-
-        {/* TESTIMONIAL GRID */}
-        <div className="grid lg:grid-cols-3 gap-8 mt-20">
-
-          {testimonials.map((item, index) => (
-
-            <div
-              key={index}
-              className="group relative animate-[float_6s_ease-in-out_infinite]"
-              style={{
-                animationDelay: `${index * 0.3}s`,
-              }}
-            >
-
-              {/* GLOW */}
-              <div className="absolute inset-0 rounded-[40px] bg-gradient-to-br from-[#9B1C1C]/10 via-[#D4A017]/10 to-[#B76E79]/10 blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
-
-              {/* CARD */}
-              <div className="relative min-h-[320px] overflow-hidden rounded-[40px] bg-white/70 backdrop-blur-2xl border border-white/50 p-8 shadow-[0_25px_80px_rgba(0,0,0,0.08)] hover:-translate-y-5 hover:shadow-[0_35px_120px_rgba(155,28,28,0.18)] transition-all duration-700">
-
-                {/* QUOTE */}
-                <div className="text-7xl text-[#D4A017]/20 font-black">
-                  “
-                </div>
-
-                {/* TEXT */}
-                <p className="mt-4 text-lg text-[#4A1F12]/75 leading-relaxed">
-
-                  {item.text}
-
-                </p>
-
-                {/* USER */}
-                <div className="mt-10">
-
-                  <h3 className="text-2xl font-black text-[#9B1C1C]">
-
-                    {item.name}
-
-                  </h3>
-
-                  <p className="mt-2 text-[#D4A017] uppercase tracking-[4px] text-sm">
-
-                    {item.role}
-
-                  </p>
-
-                </div>
-
-                {/* BORDER */}
-                <div className="absolute inset-0 rounded-[40px] border border-white/30 pointer-events-none"></div>
-
-              </div>
-
-            </div>
-
+        {/* Swipe on phones, three columns on desktop */}
+        <div className="mt-14 -mx-5 px-5 sm:mx-0 sm:px-0 flex lg:grid lg:grid-cols-3 gap-5 md:gap-8 overflow-x-auto lg:overflow-visible snap-x snap-mandatory pb-2 [scrollbar-width:none]">
+          {TESTIMONIALS.map((t, i) => (
+            <Reveal key={t.name} delay={i * 120} className="snap-start shrink-0 w-[85%] sm:w-[60%] lg:w-auto">
+              <figure className="card h-full p-7 md:p-9 flex flex-col">
+                <span className="font-display text-7xl leading-none text-gold/60 h-10">&ldquo;</span>
+                <blockquote className="mt-4 font-display text-[1.4rem] md:text-2xl leading-snug text-bronze flex-1">
+                  {t.text}
+                </blockquote>
+                <figcaption className="mt-8 pt-6 border-t border-bronze/10 flex items-center gap-4">
+                  <span className="w-11 h-11 rounded-full bg-ruby text-white font-semibold flex items-center justify-center">
+                    {t.name.charAt(0)}
+                  </span>
+                  <span>
+                    <span className="block font-semibold text-bronze">{t.name}</span>
+                    <span className="block text-xs tracking-[0.18em] uppercase text-gold-deep mt-0.5">{t.role}</span>
+                  </span>
+                </figcaption>
+              </figure>
+            </Reveal>
           ))}
-
         </div>
-
       </div>
-
     </section>
   )
 }

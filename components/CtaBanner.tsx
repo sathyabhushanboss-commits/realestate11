@@ -1,92 +1,42 @@
-'use client'
-
+import Image from 'next/image'
 import Link from 'next/link'
+import Reveal from './Reveal'
 
 export default function CtaBanner() {
-
   return (
+    <section className="bg-ivory pb-16 md:pb-24">
+      <div className="container-x">
+        <Reveal>
+          <div className="relative overflow-hidden rounded-[2rem] bg-ruby text-white">
+            <Image
+              src="/properties/set3.jpeg"
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover opacity-20 mix-blend-luminosity"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-ruby via-ruby/90 to-ruby/60" />
 
-    <section className="relative w-full overflow-hidden">
-
-      {/* BACKGROUND */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#A60F14] via-[#9B1C1C] to-[#C98692]" />
-
-      {/* WHITE GRID */}
-      <div
-        className="absolute inset-0 opacity-100"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.14) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px)
-          `,
-          backgroundSize: '72px 72px',
-        }}
-      />
-
-      {/* GLOW */}
-      <div className="absolute top-[-300px] left-[-300px] w-[900px] h-[900px] rounded-full bg-[#D4A017]/10 blur-3xl"></div>
-
-      <div className="absolute bottom-[-300px] right-[-300px] w-[900px] h-[900px] rounded-full bg-white/10 blur-3xl"></div>
-
-      {/* CONTENT */}
-      <div className="relative z-10 px-6 py-24 md:py-28">
-
-        <div className="max-w-5xl mx-auto text-center">
-
-          {/* TAG */}
-          <div className="inline-flex items-center gap-3 bg-white/10 border border-white/20 backdrop-blur-xl rounded-full px-8 py-4">
-
-            <div className="w-3 h-3 rounded-full bg-[#D4A017]" />
-
-            <p className="uppercase tracking-[7px] text-[#F4C542] text-xs md:text-sm font-bold">
-
-              FIND YOUR DREAM PROPERTY
-
-            </p>
-
+            <div className="relative px-6 py-14 sm:px-12 md:px-16 md:py-20 max-w-3xl">
+              <p className="eyebrow eyebrow-light">Find your property</p>
+              <h2 className="mt-5 font-display text-4xl sm:text-5xl md:text-6xl leading-[1.05]">
+                Ready to invest in your <em className="text-gold-soft">next address?</em>
+              </h2>
+              <p className="mt-5 text-white/80 text-lg max-w-xl">
+                Talk to our team about plots, homes, construction or rentals anywhere in Bengaluru.
+              </p>
+              <div className="mt-9 flex flex-col sm:flex-row gap-3">
+                <Link href="/appointment" className="btn btn-gold">
+                  Book an Appointment
+                </Link>
+                <Link href="/properties" className="btn btn-ghost-light">
+                  View Properties
+                </Link>
+              </div>
+            </div>
           </div>
-
-          {/* TITLE */}
-          <h2 className="mt-12 text-6xl md:text-8xl font-black leading-[0.95] text-white">
-
-            Ready To Invest In
-            <br />
-
-            Luxury Living?
-
-          </h2>
-
-          {/* DESCRIPTION */}
-          <p className="max-w-4xl mx-auto mt-10 text-xl md:text-3xl text-white/85 leading-relaxed">
-
-            Connect with Sri Megha Lakshmi Real Estate and discover premium apartments,
-            villas, and investment opportunities across Bangalore.
-
-          </p>
-
-          {/* BUTTONS */}
-          <div className="flex flex-wrap justify-center gap-6 mt-14">
-
-            <Link
-              href="/properties"
-              className="bg-white hover:bg-[#F8F6F2] text-[#9B1C1C] px-12 py-5 rounded-[20px] text-xl font-bold transition-all duration-300 hover:scale-105 shadow-2xl"
-            >
-              View Properties
-            </Link>
-
-            <Link
-              href="/appointment"
-              className="bg-[#D4A017] hover:bg-[#E8B92B] text-[#4A1F12] px-12 py-5 rounded-[20px] text-xl font-bold transition-all duration-300 hover:scale-105 shadow-2xl"
-            >
-              Book Appointment
-            </Link>
-
-          </div>
-
-        </div>
-
+        </Reveal>
       </div>
-
     </section>
   )
 }

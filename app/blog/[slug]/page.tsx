@@ -60,14 +60,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   }
 
   return (
-    <main className="min-h-screen bg-[#F8F6F2] overflow-hidden">
-      {/* BACKGROUND EFFECTS */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-200px] left-[-200px] w-[500px] h-[500px] bg-[#9B1C1C]/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] bg-[#D4A017]/10 rounded-full blur-3xl"></div>
-        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:60px_60px]"></div>
-      </div>
-
+    <main className="min-h-screen bg-ivory">
       <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
         {/* Back Button */}
         <Link 
@@ -79,7 +72,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
         </Link>
 
         {/* Blog Content */}
-        <article className="bg-white/80 backdrop-blur-xl rounded-3xl md:rounded-[40px] p-6 md:p-10 lg:p-12 border border-white/40 shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
+        <article className="card p-5 sm:p-8 md:p-12">
           {/* Header */}
           <header className="mb-8 md:mb-12">
             <div className="inline-flex items-center gap-2 bg-[#D4A017]/10 text-[#D4A017] px-3 py-1 rounded-full text-xs md:text-sm font-semibold uppercase tracking-wider mb-4">
@@ -87,7 +80,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
               {blog.category}
             </div>
             
-            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#9B1C1C] leading-tight">
+            <h1 className="heading-lg">
               {blog.title}
             </h1>
             
@@ -108,7 +101,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           </header>
 
           {/* Blog Content with Styled Sections - Using Tailwind classes */}
-          <div className="prose prose-lg max-w-none prose-headings:text-[#9B1C1C] prose-headings:font-bold prose-p:text-[#4A1F12]/80 prose-p:leading-relaxed prose-strong:text-[#9B1C1C] prose-ul:text-[#4A1F12]/80 prose-li:text-[#4A1F12]/80 prose-table:border-collapse prose-table:w-full prose-th:bg-[#9B1C1C]/10 prose-th:p-3 prose-th:text-[#9B1C1C] prose-td:p-3 prose-td:border prose-td:border-[#D4A017]/20 prose-ul:list-none prose-ul:pl-0">
+          <div>
             <div 
               className="blog-content"
               dangerouslySetInnerHTML={{ __html: blog.content }}
@@ -230,8 +223,9 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           }
           
           .blog-content h2 {
-            font-size: 1.75rem;
-            font-weight: 800;
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
             color: #9B1C1C;
             margin-top: 2.5rem;
             margin-bottom: 1rem;
@@ -241,8 +235,9 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           }
           
           .blog-content h3 {
-            font-size: 1.35rem;
-            font-weight: 700;
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 600;
             color: #9B1C1C;
             margin-top: 2rem;
             margin-bottom: 0.75rem;
@@ -308,7 +303,10 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           }
           
           .blog-content table {
-            width: 100%;
+            display: block;
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             border-collapse: collapse;
             margin: 1.5rem 0;
             font-size: 0.95rem;

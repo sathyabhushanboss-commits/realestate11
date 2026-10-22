@@ -1,70 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { connectDB } from '@/lib/db'
+import { Enquiry, Property, User } from '@/lib/models'
+import { getSession, requireApiSession } from '@/lib/auth'
+import { ensurePropertiesSeeded, isId, propertyInput, toPropertyJSON } from '@/lib/properties'
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const { id } = await context.params
+const notFound = () => NextResponse.json({ error: 'Property not found' }, { status: 404 })
 
-  const properties = [
-    {
-      _id: '1',
-      title: '1500 sq ft Residential Plot',
-      location: 'Doddakanahalli, Bengaluru',
-      price: 'On Request',
-      images: ['/properties/set1.jpeg'],
-      measurement: '1500 sq ft',
-      bedrooms: 'Residential Plot',
-      description: 'Prime residential plot in Doddakanahalli, Bengaluru.',
-      year: '2025',
-      features: ['Corner Plot', 'East Facing', 'All Approvals Done', 'Ready to Build'],
-    },
-    {
-      _id: '2',
-      title: '4800 sq ft Land with 16 Units',
-      location: 'Kasavanahalli, Bengaluru',
-      price: 'On Request',
-      images: ['/properties/set2.jpeg'],
-      measurement: '4800 sq ft',
-      bedrooms: '16 Units of 2BHK',
-      description: '4800 sq ft land featuring 16 ready 2BHK units. Excellent rental yield.',
-      year: '2025',
-      features: ['Fully Rented', 'Regular Income', 'Prime Location', 'High Appreciation'],
-    },
-    {
-      _id: '3',
-      title: 'Koramangala Premium Property',
-      location: 'Koramangala, Bengaluru',
-      price: 'On Request',
-      images: ['/properties/set3.1.jpeg', '/properties/set3.jpeg'],
-      measurement: '600 sq ft land | 3400 sq ft built-up',
-      bedrooms: '4 BHK + Commercial Space',
-      description: 'Premium property in Koramangala with 600 sq ft land and 3400 sq ft built-up area.',
-      year: '2018',
-      features: ['Prime Koramangala', 'High Rental Income', 'Mixed Use Property', 'Modern Construction'],
-    },
-    {
-      _id: '4',
-      title: 'Legacy Commercial Building',
-      location: 'Koramangala, Bengaluru',
-      price: 'On Request',
-      images: ['/properties/set4.jpeg'],
-      measurement: 'Commercial Building',
-      bedrooms: 'Commercial Space',
-      description: 'Well-maintained commercial building in Koramangala.',
-      year: '2005',
-      features: ['Prime Location', 'High Footfall', 'Redevelopment Potential', 'Stable Income'],
-    },
-  ]
+export async function GET(_request: NextRequest, ctx: RouteContext<'/api/properties/[id]'>) {
+  const { id } = await ctx.params
+  if (!isId(id)) return notFound()
 
-  const property = properties.find((p) => p._id === id)
+  await ensurePropertiesSeeded()
+  const doc = await Property.findById(id).lean()
+  const session = await getSession()
+  // Drafts are only visible to admins
+  if (!doc || (doc.status === 'draft' && session?.role !== 'admin')) return notFound()
+  return NextResponse.json(toPropertyJSON(doc))
+}
 
-  if (!property) {
-    return NextResponse.json(
-      { error: 'Property not found' },
-      { status: 404 }
-    )
+export async function PUT(request: NextRequest, ctx: RouteContext<'/api/properties/[id]'>) {
+  const { error } = await requireApiSession('admin')
+  if (error) return error
+
+  const { id } = await ctx.params
+  if (!isId(id)) return notFound()
+
+  const parsed = propertyInput.safeParse(await request.json().catch(() => null))
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
-  return NextResponse.json(property)
+  await connectDB()
+  const doc = await Property.findByIdAndUpdate(id, parsed.data, { returnDocument: 'after', runValidators: true }).lean()
+  if (!doc) return notFound()
+  return NextResponse.json(toPropertyJSON(doc))
+}
+
+export async function DELETE(_request: NextRequest, ctx: RouteContext<'/api/properties/[id]'>) {
+  const { error } = await requireApiSession('admin')
+  if (error) return error
+
+  const { id } = await ctx.params
+  if (!isId(id)) return notFound()
+
+  await connectDB()
+  const doc = await Property.findByIdAndDelete(id)
+  if (!doc) return notFound()
+
+  // Clean up references so saved lists and enquiries don't point at nothing
+  await Promise.all([
+    User.updateMany({ favorites: id }, { $pull: { favorites: id } }),
+    Enquiry.updateMany({ property: id }, { $set: { property: null } }),
+  ])
+  return NextResponse.json({ ok: true })
 }

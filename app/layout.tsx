@@ -1,6 +1,6 @@
 // app/layout.tsx
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Cormorant_Garamond, Manrope } from 'next/font/google'
 import './globals.css'
 
 import Navbar from '@/components/Navbar'
@@ -8,8 +8,22 @@ import Footer from '@/components/Footer'
 import FloatingContact from '@/components/FloatingContact'
 import CustomCursor from '@/components/CustomCursor'
 import ParticleCursor from '@/components/ParticleCursor'
+import HideOnAdmin from '@/components/HideOnAdmin'
 
-const inter = Inter({ subsets: ['latin'] })
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', display: 'swap' })
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-cormorant',
+  display: 'swap',
+})
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#1E0C07',
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.srimeghalakshmi.in'),
@@ -66,10 +80,6 @@ export const metadata: Metadata = {
     google: 'your-google-verification-code', // Add your code here
   },
   
-  icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
-  },
 }
 
 export default function RootLayout({
@@ -78,12 +88,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="bg-[#F8F6F2] overflow-x-hidden">
+    <html lang="en" className={`${manrope.variable} ${cormorant.variable}`}>
+      <body className="bg-ivory font-sans overflow-x-hidden">
         <Navbar />
         {children}
-        <Footer />
-        <FloatingContact />
+        <HideOnAdmin>
+          <Footer />
+          <FloatingContact />
+        </HideOnAdmin>
         <CustomCursor />
         <ParticleCursor />
       </body>

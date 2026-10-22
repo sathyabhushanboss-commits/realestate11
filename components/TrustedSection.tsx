@@ -1,67 +1,29 @@
-'use client'
-
-const brands = [
-  'Luxury Living',
-  'Premium Villas',
-  'Modern Architecture',
-  'Smart Homes',
-  'Vastu Design',
-  'Luxury Apartments',
-  'Elite Communities',
-  'Future Living',
+const ITEMS = [
+  'Clear Titles',
+  'DTCP & BMRDA Approved',
+  'Vastu Compliant',
+  'Turnkey Construction',
+  'e-Khata Assistance',
+  'Investment Consultation',
+  'Legal Verification',
+  'Interior Solutions',
 ]
 
 export default function TrustedSection() {
-
   return (
+    <section className="relative bg-ivory border-y border-bronze/10 py-6 overflow-hidden" aria-label="Our commitments">
+      {/* fade the edges */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-ivory to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-ivory to-transparent z-10" />
 
-    <section className="relative py-20 overflow-hidden bg-[#4A1F12]">
-
-      {/* TOP GRADIENT */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#D4A017] to-transparent"></div>
-
-      {/* TITLE */}
-      <div className="text-center mb-12 px-4">
-
-        <p className="uppercase tracking-[6px] text-[#D4A017] text-xs md:text-sm font-semibold">
-          Trusted Luxury Brand
-        </p>
-
+      <div className="flex w-max animate-[marquee_40s_linear_infinite] hover:[animation-play-state:paused]">
+        {[...ITEMS, ...ITEMS].map((item, i) => (
+          <div key={i} className="flex items-center gap-8 px-8" aria-hidden={i >= ITEMS.length}>
+            <span className="font-display italic text-2xl md:text-3xl text-bronze/80 whitespace-nowrap">{item}</span>
+            <span className="text-gold text-lg">✦</span>
+          </div>
+        ))}
       </div>
-
-      {/* MARQUEE */}
-      <div className="relative overflow-hidden">
-
-        <div className="flex whitespace-nowrap animate-[marquee_25s_linear_infinite]">
-
-          {[...brands, ...brands].map((brand, index) => (
-
-            <div
-              key={index}
-              className="flex items-center gap-6 mx-10"
-            >
-
-              {/* DOT */}
-              <div className="w-3 h-3 rounded-full bg-[#D4A017] shadow-[0_0_20px_rgba(212,160,23,1)]"></div>
-
-              {/* TEXT */}
-              <h3 className="text-3xl md:text-5xl font-black text-white/90">
-
-                {brand}
-
-              </h3>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </div>
-
-      {/* BOTTOM GRADIENT */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#D4A017] to-transparent"></div>
-
     </section>
   )
 }

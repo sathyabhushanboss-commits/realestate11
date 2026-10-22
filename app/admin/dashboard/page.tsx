@@ -1,161 +1,77 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import { connectDB } from '@/lib/db'
+import { Enquiry, Property, User } from '@/lib/models'
+import { ensurePropertiesSeeded } from '@/lib/properties'
+import { PageHeader } from '@/components/PanelShell'
+import StatusBadge from '@/components/StatusBadge'
 
-interface Property {
-  id: string
-  title: string
-  location: string
-  price: string
-  images: string[]
-  description: string
-  measurement: string
-  bedrooms: string
-  year: string
-  createdAt: string
-}
+export default async function AdminDashboard() {
+  await ensurePropertiesSeeded()
+  await connectDB()
 
-export default function AdminDashboard() {
-  const router = useRouter()
-  const [properties, setProperties] = useState<Property[]>([])
-  const [loading, setLoading] = useState(true)
+  const [properties, published, users, newEnquiries, recent] = await Promise.all([
+    Property.countDocuments(),
+    Property.countDocuments({ status: 'published' }),
+    User.countDocuments({ role: 'user' }),
+    Enquiry.countDocuments({ status: 'new' }),
+    Enquiry.find().sort({ createdAt: -1 }).limit(6).populate<{ property: { title: string } | null }>('property', 'title').lean(),
+  ])
 
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem('adminLoggedIn')
-    if (!isLoggedIn) {
-      router.push('/admin/login')
-      return
-    }
-    loadProperties()
-  }, [router])
-
-  const loadProperties = () => {
-    const stored = localStorage.getItem('properties')
-    if (stored) {
-      setProperties(JSON.parse(stored))
-    } else {
-      // Sample data
-      const sample = [
-        {
-          id: '1',
-          title: '1500 sq ft Residential Plot',
-          location: 'Doddakanahalli, Bengaluru',
-          price: 'On Request',
-          images: ['/properties/set1.jpeg'],
-          description: 'Prime residential plot in Doddakanahalli',
-          measurement: '1500 sq ft',
-          bedrooms: 'Plot',
-          year: '2025',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          title: '4800 sq ft Land with 16 Units',
-          location: 'Kasavanahalli, Bengaluru',
-          price: 'On Request',
-          images: ['/properties/set2.jpeg'],
-          description: '4800 sq ft land with 16 units',
-          measurement: '4800 sq ft',
-          bedrooms: '16 x 2BHK',
-          year: '2025',
-          createdAt: new Date().toISOString(),
-        },
-      ]
-      setProperties(sample)
-      localStorage.setItem('properties', JSON.stringify(sample))
-    }
-    setLoading(false)
-  }
-
-  const deleteProperty = (id: string) => {
-    if (!confirm('Delete this property?')) return
-    const updated = properties.filter(p => p.id !== id)
-    setProperties(updated)
-    localStorage.setItem('properties', JSON.stringify(updated))
-    alert('Deleted!')
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminLoggedIn')
-    localStorage.removeItem('adminEmail')
-    router.push('/admin/login')
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-[#9B1C1C] border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  const stats = [
+    { label: 'Total properties', value: properties, href: '/admin/properties' },
+    { label: 'Published', value: published, href: '/admin/properties' },
+    { label: 'Registered users', value: users, href: '/admin/users' },
+    { label: 'New enquiries', value: newEnquiries, href: '/admin/enquiries', highlight: newEnquiries > 0 },
+  ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-[#9B1C1C]">Property Management</h1>
-            <p className="text-sm text-gray-500">{properties.length} properties total</p>
-          </div>
-          <div className="flex gap-3">
-            <Link href="/admin/properties/new" className="bg-[#9B1C1C] text-white px-5 py-2 rounded-xl hover:bg-[#7E1717] transition">
-              + Add Property
-            </Link>
-            <button onClick={handleLogout} className="border px-5 py-2 rounded-xl hover:bg-gray-50 transition">
-              Logout
-            </button>
-          </div>
-        </div>
+    <>
+      <PageHeader
+        title="Dashboard"
+        description="An overview of your listings and leads"
+        action={
+          <Link href="/admin/properties/new" className="btn btn-primary">
+            + Add Property
+          </Link>
+        }
+      />
+
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        {stats.map((s) => (
+          <Link key={s.label} href={s.href} className="card p-5 sm:p-6 hover:-translate-y-0.5 transition-transform">
+            <p className="text-xs sm:text-sm text-bronze/60">{s.label}</p>
+            <p className={`font-display text-4xl sm:text-5xl mt-2 ${s.highlight ? 'text-ruby' : 'text-bronze'}`}>{s.value}</p>
+          </Link>
+        ))}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left px-6 py-4">Image</th>
-                  <th className="text-left px-6 py-4">Title</th>
-                  <th className="text-left px-6 py-4">Location</th>
-                  <th className="text-left px-6 py-4">Price</th>
-                  <th className="text-left px-6 py-4">Area</th>
-                  <th className="text-left px-6 py-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {properties.map((prop) => (
-                  <tr key={prop.id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      {prop.images[0] && (
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden">
-                          <Image src={prop.images[0]} alt={prop.title} fill className="object-cover" />
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 font-medium">{prop.title}</td>
-                    <td className="px-6 py-4 text-gray-600">{prop.location}</td>
-                    <td className="px-6 py-4 font-semibold text-[#D4A017]">{prop.price}</td>
-                    <td className="px-6 py-4 text-gray-600">{prop.measurement}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-3">
-                        <Link href={`/admin/properties/${prop.id}/edit`} className="text-blue-600 hover:text-blue-800">
-                          Edit
-                        </Link>
-                        <button onClick={() => deleteProperty(prop.id)} className="text-red-600 hover:text-red-800">
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <section className="card mt-8 overflow-hidden">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-bronze/10">
+          <h2 className="font-semibold text-bronze">Latest enquiries</h2>
+          <Link href="/admin/enquiries" className="text-sm text-ruby font-semibold">
+            View all →
+          </Link>
         </div>
-      </div>
-    </div>
+        {recent.length === 0 ? (
+          <p className="px-6 py-10 text-center text-bronze/50">No enquiries yet.</p>
+        ) : (
+          <ul className="divide-y divide-bronze/10">
+            {recent.map((e) => (
+              <li key={String(e._id)} className="px-5 sm:px-6 py-4 flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium text-bronze truncate">
+                    {e.name} <span className="text-bronze/50 font-normal">· {e.phone}</span>
+                  </p>
+                  <p className="text-sm text-bronze/60 truncate">
+                    {e.property?.title ?? (e.type === 'contact' ? 'General contact' : 'Site visit request')}
+                  </p>
+                </div>
+                <StatusBadge status={e.status} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </>
   )
 }
