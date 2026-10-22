@@ -1,15 +1,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { connection } from 'next/server'
-import { ArrowRight, MapPin } from 'lucide-react'
 import { connectDB } from '@/lib/db'
 import { Property } from '@/lib/models'
 import { ensurePropertiesSeeded, toPropertyJSON } from '@/lib/properties'
-import SectionHeading from './SectionHeading'
-import Reveal from './Reveal'
 
+// Latest / featured listings from the admin panel, in the site's card style
 export default async function FeaturedProperties() {
-  // Listings change from the admin panel, so read them per request
   await connection()
   await ensurePropertiesSeeded()
   await connectDB()
@@ -20,59 +17,81 @@ export default async function FeaturedProperties() {
   if (properties.length === 0) return null
 
   return (
-    <section className="section bg-ivory">
-      <div className="container-x">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <SectionHeading
-            align="left"
-            eyebrow="Featured Properties"
-            title={
-              <>
-                Addresses worth <em className="text-gold-deep">owning</em>
-              </>
-            }
-          />
-          <Reveal>
-            <Link href="/properties" className="btn btn-outline">
-              View all properties <ArrowRight className="w-4 h-4" />
-            </Link>
-          </Reveal>
+    <section className="relative py-20 md:py-28 px-4 md:px-6 overflow-hidden bg-[#F8F6F2]">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-200px] right-[-200px] w-[600px] h-[600px] rounded-full bg-[#D4A017]/10 blur-3xl"></div>
+      </div>
+
+      <div className="relative max-w-7xl mx-auto">
+        {/* HEADING */}
+        <div className="text-center">
+          <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-xl border border-[#D4A017]/20 rounded-full px-5 py-3 shadow-xl">
+            <div className="w-3 h-3 rounded-full bg-[#D4A017] animate-pulse"></div>
+            <p className="uppercase tracking-[3px] md:tracking-[5px] text-[#9B1C1C] text-xs md:text-sm font-semibold">
+              Featured Properties
+            </p>
+          </div>
+
+          <h2 className="mt-8 text-4xl md:text-6xl font-black text-[#9B1C1C] leading-tight">
+            Handpicked
+            <br />
+            <span className="text-[#D4A017]">Properties For You</span>
+          </h2>
         </div>
 
-        {/* Horizontal swipe on phones, grid on larger screens */}
-        <div className="mt-12 -mx-5 px-5 sm:mx-0 sm:px-0 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8 overflow-x-auto sm:overflow-visible snap-x snap-mandatory pb-2 [scrollbar-width:none]">
-          {properties.map((p, i) => (
-            <Reveal key={p._id} delay={i * 120} as="article" className="snap-start shrink-0 w-[82%] sm:w-auto">
-              <Link href={`/properties/${p._id}`} className="group block">
-                <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-sand">
-                  {p.images[0] && (
-                    <Image
-                      src={p.images[0]}
-                      alt={p.title}
-                      fill
-                      unoptimized={p.images[0].startsWith('/api/')}
-                      sizes="(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-[1.4s] group-hover:scale-105"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />
-                  <span className="absolute top-4 left-4 bg-ivory/90 backdrop-blur text-bronze text-[11px] font-semibold px-3 py-1 rounded-full">
-                    {p.propertyType || p.bedrooms || 'Property'}
-                  </span>
-                  <div className="absolute bottom-0 inset-x-0 p-6 text-white">
-                    <p className="flex items-center gap-1.5 text-xs text-white/75">
-                      <MapPin className="w-3.5 h-3.5" /> {p.location}
-                    </p>
-                    <h3 className="mt-2 font-display text-[1.7rem] leading-tight">{p.title}</h3>
-                    <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between text-sm">
-                      <span className="text-gold-soft font-semibold">{p.price}</span>
-                      <span className="text-white/80">{p.measurement}</span>
-                    </div>
+        {/* CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mt-14 md:mt-16">
+          {properties.map((p) => (
+            <Link
+              key={p._id}
+              href={`/properties/${p._id}`}
+              className="group block overflow-hidden rounded-3xl md:rounded-[40px] bg-white/70 backdrop-blur-2xl border border-white/50 shadow-[0_25px_80px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-700"
+            >
+              <div className="relative h-[260px] md:h-[300px] overflow-hidden bg-gray-200">
+                {p.images[0] && (
+                  <Image
+                    src={p.images[0]}
+                    alt={p.title}
+                    fill
+                    unoptimized={p.images[0].startsWith('/api/')}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                <div className="absolute top-4 left-4 bg-white/85 backdrop-blur-xl rounded-full px-4 py-1.5 max-w-[85%]">
+                  <p className="uppercase tracking-[2px] text-[#9B1C1C] text-[10px] md:text-xs font-semibold truncate">{p.location}</p>
+                </div>
+              </div>
+
+              <div className="p-5 md:p-7">
+                <h3 className="text-xl md:text-2xl font-black text-[#9B1C1C] leading-tight">{p.title}</h3>
+                <div className="grid grid-cols-2 gap-3 mt-4 p-3 bg-[#F8F6F2] rounded-xl">
+                  <div className="min-w-0">
+                    <p className="text-[#4A1F12]/50 text-xs">Area</p>
+                    <p className="text-[#9B1C1C] font-bold text-sm truncate">{p.measurement || '—'}</p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[#4A1F12]/50 text-xs">Configuration</p>
+                    <p className="text-[#9B1C1C] font-bold text-sm truncate">{p.bedrooms || '—'}</p>
                   </div>
                 </div>
-              </Link>
-            </Reveal>
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <p className="text-xl font-black text-[#D4A017]">{p.price}</p>
+                  <span className="text-sm font-semibold text-[#9B1C1C] group-hover:translate-x-1 transition-transform">View Details →</span>
+                </div>
+              </div>
+            </Link>
           ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <Link
+            href="/properties"
+            className="inline-flex items-center gap-2 bg-[#9B1C1C] hover:bg-[#7E1717] text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition-all duration-500 hover:scale-105"
+          >
+            View All Properties →
+          </Link>
         </div>
       </div>
     </section>

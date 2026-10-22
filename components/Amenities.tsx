@@ -1,44 +1,161 @@
-import { Building2, Car, Dumbbell, ShieldCheck, Trees, Waves } from 'lucide-react'
-import SectionHeading from './SectionHeading'
-import Reveal from './Reveal'
+'use client'
 
-const AMENITIES = [
-  { icon: Building2, title: 'Clubhouse', desc: 'Community spaces designed for gatherings and modern living.' },
-  { icon: ShieldCheck, title: '24/7 Security', desc: 'Gated communities with round-the-clock protection.' },
-  { icon: Trees, title: 'Green Spaces', desc: 'Landscaped gardens and peaceful outdoor areas.' },
-  { icon: Dumbbell, title: 'Fitness Centre', desc: 'Well-equipped gyms and wellness spaces.' },
-  { icon: Waves, title: 'Swimming Pool', desc: 'Pool areas made for relaxation and recreation.' },
-  { icon: Car, title: 'Secure Parking', desc: 'Spacious parking with controlled access.' },
+import {
+  Building2,
+  ShieldCheck,
+  Trees,
+  Dumbbell,
+  Waves,
+  Car,
+} from 'lucide-react'
+
+const amenities = [
+  {
+    icon: Building2,
+    title: 'Clubhouse',
+    desc: 'Luxury clubhouse spaces crafted for modern community living.',
+  },
+
+  {
+    icon: ShieldCheck,
+    title: '24/7 Security',
+    desc: 'Advanced security systems and gated community protection.',
+  },
+
+  {
+    icon: Trees,
+    title: 'Green Spaces',
+    desc: 'Beautiful landscaped gardens and peaceful outdoor environments.',
+  },
+
+  {
+    icon: Dumbbell,
+    title: 'Fitness Center',
+    desc: 'Premium gym and wellness spaces for healthy lifestyles.',
+  },
+
+  {
+    icon: Waves,
+    title: 'Swimming Pool',
+    desc: 'Luxury pool areas designed for relaxation and recreation.',
+  },
+
+  {
+    icon: Car,
+    title: 'Smart Parking',
+    desc: 'Spacious and secure parking with modern access systems.',
+  },
 ]
 
 export default function Amenities() {
-  return (
-    <section className="section bg-ivory">
-      <div className="container-x">
-        <SectionHeading
-          eyebrow="Lifestyle"
-          title={
-            <>
-              Designed for the way <em className="text-gold-deep">you live</em>
-            </>
-          }
-          description="Thoughtful amenities that make every day more comfortable, secure and connected."
-        />
 
-        <div className="mt-14 grid grid-cols-2 lg:grid-cols-3 border-t border-l border-bronze/10">
-          {AMENITIES.map(({ icon: Icon, title, desc }, i) => (
-            <Reveal key={title} delay={(i % 3) * 100} className="border-r border-b border-bronze/10">
-              <div className="group h-full p-5 sm:p-8 md:p-10 hover:bg-white transition-colors duration-500">
-                <span className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-gold/40 text-gold-deep flex items-center justify-center group-hover:bg-ruby group-hover:border-ruby group-hover:text-white transition-colors duration-500">
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.5} />
-                </span>
-                <h3 className="mt-5 sm:mt-7 font-display text-xl sm:text-[1.75rem] leading-tight text-ruby">{title}</h3>
-                <p className="mt-2 text-sm sm:text-base text-bronze/65 leading-relaxed">{desc}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+  return (
+
+    <section className="relative py-20 md:py-32 px-4 md:px-6 overflow-hidden bg-[#F8F6F2]">
+
+      {/* BACKGROUND */}
+      <div className="absolute inset-0 overflow-hidden">
+
+        <div className="absolute top-[-250px] left-[-250px] w-[700px] h-[700px] rounded-full bg-[#9B1C1C]/10 blur-3xl"></div>
+
+        <div className="absolute bottom-[-250px] right-[-250px] w-[700px] h-[700px] rounded-full bg-[#D4A017]/10 blur-3xl"></div>
+
       </div>
+
+      <div className="relative max-w-7xl mx-auto">
+
+        {/* HEADING */}
+        <div className="text-center">
+
+          <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-xl border border-[#D4A017]/20 rounded-full px-5 py-3 shadow-xl">
+
+            <div className="w-3 h-3 rounded-full bg-[#D4A017] animate-pulse"></div>
+
+            <p className="uppercase tracking-[5px] text-[#9B1C1C] text-xs md:text-sm font-semibold">
+              Premium Amenities
+            </p>
+
+          </div>
+
+          <h2 className="mt-8 text-4xl md:text-7xl font-black text-[#9B1C1C] leading-tight">
+
+            Lifestyle Designed
+            <br />
+
+            <span className="text-[#D4A017]">
+              For Luxury Living
+            </span>
+
+          </h2>
+
+          <p className="max-w-3xl mx-auto mt-6 md:mt-8 text-base md:text-2xl text-[#4A1F12]/70 leading-relaxed">
+
+            Experience world-class amenities crafted
+            to elevate comfort, wellness,
+            security, and modern luxury lifestyles.
+
+          </p>
+
+        </div>
+
+        {/* GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 mt-12 md:mt-20">
+
+          {amenities.map((item, index) => {
+
+            const Icon = item.icon
+
+            return (
+
+              <div
+                key={index}
+                className="group relative animate-[float_6s_ease-in-out_infinite]"
+                style={{
+                  animationDelay: `${index * 0.3}s`,
+                }}
+              >
+
+                {/* GLOW */}
+                <div className="absolute inset-0 rounded-[40px] bg-gradient-to-br from-[#9B1C1C]/10 via-[#D4A017]/10 to-[#B76E79]/10 blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+
+                {/* CARD */}
+                <div className="relative md:min-h-[320px] overflow-hidden rounded-3xl md:rounded-[40px] bg-white/70 backdrop-blur-2xl border border-white/50 p-7 md:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.08)] hover:-translate-y-5 hover:shadow-[0_35px_120px_rgba(155,28,28,0.18)] transition-all duration-700">
+
+                  {/* ICON */}
+                  <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-[#9B1C1C] via-[#B76E79] to-[#D4A017] flex items-center justify-center shadow-2xl">
+
+                    <Icon className="w-10 h-10 text-white" />
+
+                  </div>
+
+                  {/* TITLE */}
+                  <h3 className="mt-6 md:mt-10 text-2xl md:text-3xl font-black text-[#9B1C1C]">
+
+                    {item.title}
+
+                  </h3>
+
+                  {/* DESCRIPTION */}
+                  <p className="mt-3 md:mt-6 text-base md:text-lg text-[#4A1F12]/70 leading-relaxed">
+
+                    {item.desc}
+
+                  </p>
+
+                  {/* BORDER */}
+                  <div className="absolute inset-0 rounded-[40px] border border-white/30 pointer-events-none"></div>
+
+                </div>
+
+              </div>
+
+            )
+          })}
+
+        </div>
+
+      </div>
+
     </section>
   )
 }

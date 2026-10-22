@@ -1,115 +1,81 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { connection } from 'next/server'
-import { Check } from 'lucide-react'
 import { getCompany, type CompanySlug } from '@/lib/companies'
-import { COMPANY_LINKS } from '@/lib/site'
-import Reveal from './Reveal'
 
 const STATUS_STYLES: Record<string, string> = {
-  available: 'bg-emerald-100 text-emerald-800',
-  'few left': 'bg-amber-100 text-amber-800',
-  'sold out': 'bg-ruby/10 text-ruby',
-  'coming soon': 'bg-sky-100 text-sky-800',
+  available: 'bg-green-100 text-green-700',
+  'few left': 'bg-amber-100 text-amber-700',
+  'sold out': 'bg-red-100 text-red-700',
+  'coming soon': 'bg-sky-100 text-sky-700',
 }
-
-// Uploaded media is streamed from /api/media and skips the image optimiser
-const isUpload = (src: string) => src.startsWith('/api/')
 
 export default async function CompanyPage({ slug }: { slug: CompanySlug }) {
   // Content is edited by the admin at runtime, so always render per request
   await connection()
   const company = await getCompany(slug)
   const [heroImage] = company.images
-  const index = COMPANY_LINKS.findIndex((c) => c.href === `/${slug}`)
-  const others = COMPANY_LINKS.filter((c) => c.href !== `/${slug}`)
 
   return (
-    <main className="bg-ivory">
+    <main className="min-h-screen bg-[#F8F6F2]">
       {/* HERO */}
-      <section className="relative min-h-[460px] md:min-h-[600px] flex items-end overflow-hidden bg-ink">
+      <section className="relative min-h-[420px] md:min-h-[520px] flex items-end overflow-hidden bg-[#4A1F12]">
         {heroImage && (
-          <Image
-            src={heroImage}
-            alt={company.name}
-            fill
-            priority
-            unoptimized={isUpload(heroImage)}
-            sizes="100vw"
-            className="object-cover opacity-60"
-          />
+          <Image src={heroImage} alt={company.name} fill priority unoptimized className="object-cover opacity-70" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/20" />
-        {!heroImage && <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-ruby/30 blur-3xl" />}
-
-        <div className="relative container-x pb-12 md:pb-20 pt-24">
-          <p className="eyebrow eyebrow-light">
-            {index >= 0 ? `0${index + 1} · ` : ''}Sri Megha Lakshmi Group
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="relative max-w-7xl mx-auto w-full px-4 md:px-6 pt-20 pb-12">
+          <p className="text-[#D4A017] uppercase tracking-[0.2em] text-xs md:text-sm font-semibold mb-3">
+            Sri Megha Lakshmi Group
           </p>
-          <h1 className="mt-5 font-display text-5xl sm:text-6xl md:text-7xl text-white leading-[1.02] max-w-4xl text-balance">
-            {company.name}
-          </h1>
-          {company.tagline && <p className="mt-5 text-lg md:text-xl text-white/75 max-w-2xl">{company.tagline}</p>}
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Link href="/appointment" className="btn btn-gold">
-              Book a Site Visit
-            </Link>
-            {company.priceList.length > 0 && (
-              <a href="#prices" className="btn btn-ghost-light">
-                See Price List
-              </a>
-            )}
-          </div>
+          <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">{company.name}</h1>
+          {company.tagline && <p className="text-white/85 text-lg md:text-xl mt-4 max-w-2xl">{company.tagline}</p>}
         </div>
       </section>
 
       {/* ABOUT + HIGHLIGHTS */}
-      <section className="section">
-        <div className="container-x grid lg:grid-cols-[1.4fr_1fr] gap-12 lg:gap-20">
-          <Reveal>
-            <p className="eyebrow">About</p>
-            <div className="mt-6 space-y-5">
-              {company.description
-                .split(/\n\s*\n/)
-                .filter(Boolean)
-                .map((para, i) => (
-                  <p
-                    key={i}
-                    className={i === 0 ? 'font-display text-2xl md:text-3xl leading-snug text-bronze' : 'lead whitespace-pre-line'}
-                  >
-                    {para}
-                  </p>
-                ))}
-            </div>
-          </Reveal>
-
-          {company.highlights.length > 0 && (
-            <Reveal delay={120}>
-              <aside className="card p-7 md:p-9">
-                <h2 className="font-display text-2xl text-ruby">Why choose us</h2>
-                <ul className="mt-6 space-y-4">
-                  {company.highlights.map((item) => (
-                    <li key={item} className="flex gap-3 text-bronze">
-                      <span className="w-6 h-6 rounded-full bg-gold/15 text-gold-deep flex items-center justify-center shrink-0 mt-0.5">
-                        <Check className="w-3.5 h-3.5" />
-                      </span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </aside>
-            </Reveal>
-          )}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 py-14 md:py-16 grid lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#9B1C1C] mb-6">About {company.name}</h2>
+          <div className="space-y-4 text-[#4A1F12]/85 text-base md:text-lg leading-relaxed">
+            {company.description
+              .split(/\n\s*\n/)
+              .filter(Boolean)
+              .map((para, i) => (
+                <p key={i} className="whitespace-pre-line">
+                  {para}
+                </p>
+              ))}
+          </div>
         </div>
+
+        {company.highlights.length > 0 && (
+          <aside className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-[#D4A017]/20 h-fit">
+            <h3 className="text-xl font-bold text-[#9B1C1C] mb-5">Why choose us</h3>
+            <ul className="space-y-3">
+              {company.highlights.map((item) => (
+                <li key={item} className="flex gap-3 text-[#4A1F12]">
+                  <span className="mt-2 w-2 h-2 rounded-full bg-[#D4A017] shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/appointment"
+              className="mt-8 block text-center bg-[#9B1C1C] hover:bg-[#7E1717] text-white py-3 rounded-xl font-semibold transition"
+            >
+              Book a Site Visit
+            </Link>
+          </aside>
+        )}
       </section>
 
       {/* VIDEOS */}
       {company.videos.length > 0 && (
-        <section className="section bg-ink">
-          <div className="container-x">
-            <p className="eyebrow eyebrow-light">Video Tour</p>
-            <h2 className="heading-lg mt-5 !text-white">See it for yourself</h2>
-            <div className={`mt-10 grid gap-6 ${company.videos.length > 1 ? 'md:grid-cols-2' : 'max-w-4xl'}`}>
+        <section className="bg-white py-14 md:py-16">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#9B1C1C] mb-8">Video Tour</h2>
+            <div className={`grid gap-6 ${company.videos.length > 1 ? 'md:grid-cols-2' : 'max-w-4xl'}`}>
               {company.videos.map((src) => (
                 <video
                   key={src}
@@ -117,7 +83,7 @@ export default async function CompanyPage({ slug }: { slug: CompanySlug }) {
                   controls
                   playsInline
                   preload="metadata"
-                  className="w-full rounded-3xl bg-black max-h-[80vh]"
+                  className="w-full rounded-2xl shadow-lg bg-black max-h-[80vh]"
                 />
               ))}
             </div>
@@ -125,131 +91,107 @@ export default async function CompanyPage({ slug }: { slug: CompanySlug }) {
         </section>
       )}
 
-      {/* GALLERY */}
+      {/* PHOTO GALLERY */}
       {company.images.length > 0 && (
-        <section className="section">
-          <div className="container-x">
-            <p className="eyebrow">Gallery</p>
-            <h2 className="heading-lg mt-5">Our work</h2>
-            <div className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
-              {company.images.map((src, i) => (
-                <Reveal key={src} delay={(i % 3) * 80}>
-                  <a
-                    href={src}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block relative aspect-[4/5] rounded-2xl sm:rounded-3xl overflow-hidden bg-sand"
-                  >
-                    <Image
-                      src={src}
-                      alt={`${company.name} photo ${i + 1}`}
-                      fill
-                      unoptimized={isUpload(src)}
-                      sizes="(max-width: 768px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-[1.2s] group-hover:scale-105"
-                    />
-                  </a>
-                </Reveal>
-              ))}
-            </div>
+        <section className="max-w-7xl mx-auto px-4 md:px-6 py-14 md:py-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#9B1C1C] mb-8">Gallery</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            {company.images.map((src, i) => (
+              <a
+                key={src}
+                href={src}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative aspect-[4/3] rounded-xl overflow-hidden group bg-gray-100"
+              >
+                <Image
+                  src={src}
+                  alt={`${company.name} photo ${i + 1}`}
+                  fill
+                  unoptimized
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </a>
+            ))}
           </div>
         </section>
       )}
 
       {/* PRICE LIST */}
-      <section id="prices" className="section bg-white scroll-mt-24">
-        <div className="container-x max-w-5xl">
-          <p className="eyebrow">Pricing</p>
-          <h2 className="heading-lg mt-5">Price list</h2>
-
+      <section className="bg-white py-14 md:py-16">
+        <div className="max-w-5xl mx-auto px-4 md:px-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#9B1C1C] mb-2">Price List</h2>
           {company.priceList.length === 0 ? (
-            <p className="lead mt-6">
-              Prices are available on request.{' '}
-              <Link href="/contact" className="text-ruby font-semibold underline underline-offset-4">
+            <p className="text-[#4A1F12]/70 mt-4">
+              Prices available on request.{' '}
+              <Link href="/contact" className="text-[#9B1C1C] font-semibold underline">
                 Contact us
               </Link>{' '}
               for the latest price list.
             </p>
           ) : (
             <>
-              {/* Cards on phones */}
-              <ul className="mt-10 grid gap-3 md:hidden">
-                {company.priceList.map((row) => (
-                  <li key={row.id} className="rounded-2xl border border-bronze/10 bg-ivory p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="font-semibold text-bronze">{row.type}</p>
-                      {row.status && <PriceStatus status={row.status} />}
-                    </div>
-                    <div className="mt-3 flex items-end justify-between gap-3">
-                      <p className="text-sm text-bronze/60">{row.area || '—'}</p>
-                      <p className="font-display text-2xl text-ruby">{row.price}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Table on larger screens */}
-              <div className="hidden md:block mt-10 rounded-3xl border border-bronze/10 overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-ink text-white/80 text-xs tracking-[0.18em] uppercase">
+              <div className="mt-6 overflow-x-auto rounded-2xl border border-[#D4A017]/30">
+                <table className="w-full min-w-[520px]">
+                  <thead className="bg-[#9B1C1C] text-white">
                     <tr>
-                      <th className="px-6 py-4 font-semibold">Type</th>
-                      <th className="px-6 py-4 font-semibold">Area</th>
-                      <th className="px-6 py-4 font-semibold">Price</th>
-                      <th className="px-6 py-4 font-semibold">Status</th>
+                      <th className="text-left px-5 py-4 font-semibold">Type</th>
+                      <th className="text-left px-5 py-4 font-semibold">Area</th>
+                      <th className="text-left px-5 py-4 font-semibold">Price</th>
+                      <th className="text-left px-5 py-4 font-semibold">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {company.priceList.map((row) => (
-                      <tr key={row.id} className="border-t border-bronze/10 even:bg-ivory/60">
-                        <td className="px-6 py-5 font-semibold text-bronze">{row.type}</td>
-                        <td className="px-6 py-5 text-bronze/70">{row.area || '—'}</td>
-                        <td className="px-6 py-5 font-display text-2xl text-ruby">{row.price}</td>
-                        <td className="px-6 py-5">{row.status && <PriceStatus status={row.status} />}</td>
+                      <tr key={row.id} className="border-t border-[#D4A017]/20 even:bg-[#F8F6F2]">
+                        <td className="px-5 py-4 font-medium text-[#4A1F12]">{row.type}</td>
+                        <td className="px-5 py-4 text-[#4A1F12]/80">{row.area || '—'}</td>
+                        <td className="px-5 py-4 font-semibold text-[#9B1C1C]">{row.price}</td>
+                        <td className="px-5 py-4">
+                          {row.status && (
+                            <span
+                              className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                                STATUS_STYLES[row.status.toLowerCase()] ?? 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {row.status}
+                            </span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              {company.priceNote && <p className="text-sm text-bronze/55 mt-5">* {company.priceNote}</p>}
+              {company.priceNote && <p className="text-sm text-[#4A1F12]/60 mt-4">* {company.priceNote}</p>}
             </>
           )}
         </div>
       </section>
 
-      {/* SISTER COMPANIES */}
-      <section className="section">
-        <div className="container-x">
-          <p className="eyebrow">Also from the group</p>
-          <div className="mt-8 grid sm:grid-cols-2 gap-4">
-            {others.map((c) => (
-              <Link
-                key={c.href}
-                href={c.href}
-                className="group card p-6 md:p-8 flex items-center justify-between gap-4 hover:-translate-y-0.5 transition-transform"
-              >
-                <span>
-                  <span className="block font-display text-2xl md:text-3xl text-ruby">{c.label}</span>
-                  <span className="block text-sm text-bronze/60 mt-1">{c.note}</span>
-                </span>
-                <span className="text-2xl text-gold group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
-            ))}
+      {/* CTA */}
+      <section className="bg-[#9B1C1C] py-12 md:py-14">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">Interested in {company.name}?</h2>
+            <p className="text-white/80 mt-2">Talk to our team for site visits, pricing and offers.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full md:w-auto">
+            <Link
+              href="/contact"
+              className="text-center bg-white text-[#9B1C1C] px-6 py-3 rounded-xl font-semibold hover:bg-[#F8F6F2] transition"
+            >
+              Contact Us
+            </Link>
+            <Link
+              href="/appointment"
+              className="text-center bg-[#D4A017] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#B8890F] transition"
+            >
+              Book Appointment
+            </Link>
           </div>
         </div>
       </section>
     </main>
-  )
-}
-
-function PriceStatus({ status }: { status: string }) {
-  return (
-    <span
-      className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full ${
-        STATUS_STYLES[status.toLowerCase()] ?? 'bg-gray-100 text-gray-700'
-      }`}
-    >
-      {status}
-    </span>
   )
 }

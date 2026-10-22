@@ -51,7 +51,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   }
 
   return (
-    <main className="min-h-[calc(100vh-84px)] grid lg:grid-cols-2">
+    <main className="min-h-[calc(100vh-84px)] font-sans grid lg:grid-cols-2">
       {/* BRAND PANEL */}
       <div className="hidden lg:flex relative bg-ink text-white flex-col justify-between p-14 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-ruby/30 blur-3xl" />

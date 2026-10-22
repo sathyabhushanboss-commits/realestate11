@@ -1,100 +1,179 @@
-import type { Metadata } from 'next'
-import { Clock, Mail, MapPin, Phone } from 'lucide-react'
-import EnquiryForm from '@/components/EnquiryForm'
-import { SITE } from '@/lib/site'
-
-export const metadata: Metadata = {
-  title: 'Contact Us',
-  description:
-    'Contact Sri Megha Lakshmi Group in Koramangala, Bengaluru for plots, homes, construction, rentals and property consultation.',
-}
+import Link from 'next/link'
+import ContactForm from '@/components/ContactForm'
 
 export default function ContactPage() {
   return (
-    <main className="bg-ivory">
-      <section className="container-x pt-12 md:pt-20 pb-10 md:pb-14">
-        <p className="eyebrow">Contact</p>
-        <h1 className="heading-xl mt-5 max-w-4xl">
-          Let&apos;s build your <em className="text-gold-deep">dream property.</em>
-        </h1>
-        <p className="lead mt-5 max-w-2xl">
-          Plots, homes, construction, rentals or legal paperwork — our team in Koramangala is here to help.
-        </p>
-      </section>
+    <main className="relative min-h-screen overflow-hidden bg-[#F8F6F2]">
+      {/* BACKGROUND EFFECTS */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* RUBY GLOW */}
+        <div className="absolute top-[-250px] left-[-200px] w-[700px] h-[700px] rounded-full bg-[#9B1C1C]/10 blur-3xl"></div>
+        {/* GOLD GLOW */}
+        <div className="absolute bottom-[-250px] right-[-200px] w-[700px] h-[700px] rounded-full bg-[#D4A017]/10 blur-3xl"></div>
+        {/* GRID */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+      </div>
 
-      <section className="container-x pb-16 md:pb-24 grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-14 items-start">
-        {/* DETAILS */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
-          <a href={SITE.phoneHref} className="card p-6 flex gap-5 hover:-translate-y-0.5 transition-transform">
-            <span className="w-12 h-12 rounded-full bg-ruby text-white flex items-center justify-center shrink-0">
-              <Phone className="w-5 h-5" />
-            </span>
-            <span>
-              <span className="block text-[11px] tracking-[0.2em] uppercase font-bold text-gold-deep">Call us</span>
-              {SITE.phones.map((p) => (
-                <span key={p} className="block mt-1 font-semibold text-bronze">
-                  {p}
-                </span>
-              ))}
-            </span>
-          </a>
-          <a href={`mailto:${SITE.email}`} className="card p-6 flex gap-5 hover:-translate-y-0.5 transition-transform">
-            <span className="w-12 h-12 rounded-full bg-ruby text-white flex items-center justify-center shrink-0">
-              <Mail className="w-5 h-5" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[11px] tracking-[0.2em] uppercase font-bold text-gold-deep">Email</span>
-              <span className="block mt-1 font-semibold text-bronze break-all">{SITE.email}</span>
-            </span>
-          </a>
-          <div className="card p-6 flex gap-5">
-            <span className="w-12 h-12 rounded-full bg-ruby text-white flex items-center justify-center shrink-0">
-              <MapPin className="w-5 h-5" />
-            </span>
-            <address className="not-italic">
-              <span className="block text-[11px] tracking-[0.2em] uppercase font-bold text-gold-deep">Office</span>
-              {SITE.addressLines.map((line) => (
-                <span key={line} className="block mt-1 text-bronze">
-                  {line}
-                </span>
-              ))}
-            </address>
+      {/* HERO - Zero top gap */}
+      <section className="relative pt-0 pb-12 md:pb-20 px-4 md:px-6 text-center">
+        <div className="max-w-5xl mx-auto">
+          {/* TAG */}
+          <div className="inline-flex items-center gap-2 md:gap-3 bg-white/70 backdrop-blur-xl border border-[#D4A017]/20 rounded-full px-4 md:px-6 py-2 md:py-3 shadow-xl">
+            <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-[#D4A017] animate-pulse"></div>
+            <p className="uppercase tracking-[3px] md:tracking-[6px] text-[#9B1C1C] text-xs md:text-sm font-semibold">
+              Contact Sri Megha Lakshmi
+            </p>
           </div>
-          <div className="card p-6 flex gap-5">
-            <span className="w-12 h-12 rounded-full bg-ruby text-white flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5" />
-            </span>
-            <span>
-              <span className="block text-[11px] tracking-[0.2em] uppercase font-bold text-gold-deep">Hours</span>
-              <span className="block mt-1 text-bronze">{SITE.hours}</span>
-            </span>
+
+          {/* HEADING */}
+          <h1 className="mt-6 md:mt-10 text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.1] md:leading-[0.95] text-[#9B1C1C]">
+            Let&apos;s Build
+            <br />
+            <span className="text-[#D4A017]">Your Dream</span>
+            <br />
+            Property
+          </h1>
+
+          {/* DESCRIPTION */}
+          <p className="max-w-3xl mx-auto mt-6 md:mt-10 text-lg md:text-xl lg:text-2xl text-[#4A1F12]/70 leading-relaxed px-4">
+            Contact Sri Megha Lakshmi for luxury apartments,
+            premium villas, real estate investments,
+            construction solutions, and property consultations in Bengaluru.
+          </p>
+        </div>
+      </section>
+
+      {/* MAIN CONTACT SECTION */}
+      <section className="relative pb-20 md:pb-32 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+          {/* LEFT SIDE */}
+          <div>
+            {/* TITLE */}
+            <div>
+              <p className="uppercase tracking-[4px] md:tracking-[6px] text-[#D4A017] text-xs md:text-sm font-semibold">
+                Contact Information
+              </p>
+              <h2 className="mt-4 md:mt-5 text-3xl md:text-5xl lg:text-6xl font-black text-[#9B1C1C] leading-tight">
+                Luxury Real Estate
+                <br />
+                Consultation
+              </h2>
+              <p className="mt-6 md:mt-8 text-lg md:text-xl text-[#4A1F12]/70 leading-relaxed">
+                Our expert team provides personalized support for
+                premium properties, construction services,
+                and investment opportunities across Bangalore.
+              </p>
+            </div>
+
+            {/* CONTACT CARDS */}
+            <div className="mt-10 md:mt-14 space-y-5 md:space-y-8">
+              {/* PHONE */}
+              <div className="group relative overflow-hidden bg-white/70 backdrop-blur-2xl border border-white/50 rounded-2xl md:rounded-[32px] p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] hover:-translate-y-2 md:hover:-translate-y-3 hover:shadow-[0_30px_80px_rgba(155,28,28,0.15)] transition-all duration-700">
+                <div className="absolute top-0 right-0 w-32 h-32 md:w-40 md:h-40 bg-[#9B1C1C]/5 rounded-full blur-3xl"></div>
+                <p className="uppercase tracking-[3px] md:tracking-[5px] text-[#D4A017] text-xs md:text-sm font-semibold">
+                  Phone
+                </p>
+                <Link href="tel:+919741021116">
+                  <h3 className="mt-3 md:mt-5 text-2xl md:text-3xl font-bold text-[#9B1C1C] hover:text-[#B76E79] transition-colors duration-300">
+                    +91 9741021116
+                  </h3>
+                </Link>
+                <Link href="tel:+919845735652">
+                  <p className="mt-2 md:mt-3 text-lg text-[#4A1F12]/70 hover:text-[#9B1C1C] transition-colors duration-300">
+                    +91 9845735652
+                  </p>
+                </Link>
+              </div>
+
+              {/* EMAIL */}
+              <div className="group relative overflow-hidden bg-white/70 backdrop-blur-2xl border border-white/50 rounded-2xl md:rounded-[32px] p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] hover:-translate-y-2 md:hover:-translate-y-3 hover:shadow-[0_30px_80px_rgba(212,160,23,0.15)] transition-all duration-700">
+                <div className="absolute bottom-0 left-0 w-32 h-32 md:w-40 md:h-40 bg-[#D4A017]/10 rounded-full blur-3xl"></div>
+                <p className="uppercase tracking-[3px] md:tracking-[5px] text-[#D4A017] text-xs md:text-sm font-semibold">
+                  Email Address
+                </p>
+                <Link href="mailto:hello@srimeghalakshmi.in">
+                  <h3 className="mt-3 md:mt-5 text-xl md:text-2xl lg:text-3xl font-bold text-[#9B1C1C] break-all hover:text-[#B76E79] transition-colors duration-300">
+                    hello@srimeghalakshmi.in
+                  </h3>
+                </Link>
+              </div>
+
+              {/* ADDRESS */}
+              <div className="group relative overflow-hidden bg-white/70 backdrop-blur-2xl border border-white/50 rounded-2xl md:rounded-[32px] p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] hover:-translate-y-2 md:hover:-translate-y-3 hover:shadow-[0_30px_80px_rgba(180,107,77,0.15)] transition-all duration-700">
+                <div className="absolute top-0 left-0 w-32 h-32 md:w-40 md:h-40 bg-[#B76E79]/10 rounded-full blur-3xl"></div>
+                <p className="uppercase tracking-[3px] md:tracking-[5px] text-[#D4A017] text-xs md:text-sm font-semibold">
+                  Office Address
+                </p>
+                <address className="mt-3 md:mt-5 text-base md:text-lg text-[#4A1F12]/80 leading-relaxed not-italic">
+                  Shop No. 902,
+                  <br />
+                  2nd Main Rd,
+                  <br />
+                  Nirguna Mandir Layout,
+                  <br />
+                  Cauvery Colony,
+                  <br />
+                  Koramangala,
+                  <br />
+                  Bengaluru - 560034
+                </address>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT SIDE FORM */}
+          <div className="relative mt-10 lg:mt-0">
+            {/* GLOW */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#9B1C1C]/10 to-[#D4A017]/10 blur-3xl rounded-2xl md:rounded-[40px]"></div>
+
+            {/* FORM CONTAINER */}
+            <div className="relative bg-white/80 backdrop-blur-2xl border border-white/50 rounded-2xl md:rounded-[40px] p-6 md:p-10 lg:p-12 shadow-[0_30px_100px_rgba(0,0,0,0.10)]">
+              {/* HEADER */}
+              <div>
+                <p className="uppercase tracking-[4px] md:tracking-[6px] text-[#D4A017] text-xs md:text-sm font-semibold">
+                  Send Message
+                </p>
+                <h2 className="mt-4 md:mt-5 text-3xl md:text-4xl lg:text-5xl font-black text-[#9B1C1C]">
+                  Contact Form
+                </h2>
+                <p className="mt-4 md:mt-5 text-base md:text-lg text-[#4A1F12]/70 leading-relaxed">
+                  Fill out the form below and our luxury real estate team
+                  will contact you shortly.
+                </p>
+              </div>
+
+              {/* FORM */}
+              <ContactForm />
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* FORM */}
-        <div className="card p-6 sm:p-9">
-          <h2 className="font-display text-3xl md:text-4xl text-ruby">Send us a message</h2>
-          <p className="text-bronze/60 mt-2 mb-7">We usually respond within a few hours.</p>
-          <EnquiryForm type="contact" submitLabel="Send Message" />
+      {/* MAP SECTION */}
+      <section className="relative py-12 md:py-20 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/70 backdrop-blur-2xl border border-white/50 rounded-2xl md:rounded-[40px] p-4 md:p-8 shadow-2xl overflow-hidden">
+            <h2 className="text-2xl md:text-4xl font-black text-[#9B1C1C] text-center mb-6 md:mb-8">
+              Find Us Here
+            </h2>
+            <div className="relative w-full h-[300px] md:h-[400px] rounded-xl md:rounded-2xl overflow-hidden">
+              <iframe
+                src="https://www.google.com/maps?q=Cauvery+Colony,+Koramangala,+Bengaluru+560034&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Sri Megha Lakshmi Office Location - Koramangala, Bengaluru"
+                className="rounded-xl md:rounded-2xl"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* MAP */}
-      <section className="container-x pb-16 md:pb-24">
-        <div className="rounded-3xl overflow-hidden border border-bronze/10 h-[320px] md:h-[440px] bg-sand">
-          <iframe
-            src="https://www.google.com/maps?q=Cauvery+Colony,+Koramangala,+Bengaluru+560034&output=embed"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Sri Megha Lakshmi office location — Koramangala, Bengaluru"
-          />
-        </div>
-      </section>
-
+      {/* Schema Markup for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -102,9 +181,9 @@ export default function ContactPage() {
             '@context': 'https://schema.org',
             '@type': 'RealEstateAgent',
             name: 'Sri Megha Lakshmi',
-            description: 'Real estate developer and construction company in Bangalore offering property consultation, homes and construction services.',
+            description: 'Premium luxury real estate developer in Bangalore offering property consultation, luxury apartments, and construction services.',
             telephone: '+919741021116',
-            email: SITE.email,
+            email: 'hello@srimeghalakshmi.in',
             address: {
               '@type': 'PostalAddress',
               streetAddress: 'Shop No. 902, 2nd Main Rd, Nirguna Mandir Layout, Cauvery Colony, Koramangala',
@@ -113,8 +192,18 @@ export default function ContactPage() {
               postalCode: '560034',
               addressCountry: 'India',
             },
-            openingHours: 'Mo-Sa 10:00-19:00',
+            openingHours: 'Mon-Sat 10:00 AM - 7:00 PM',
+            priceRange: '₹₹₹₹',
             areaServed: 'Bengaluru',
+            contactPoint: {
+              '@type': 'ContactPoint',
+              telephone: '+919741021116',
+              contactType: 'customer service',
+              availableLanguage: ['English', 'Kannada', 'Hindi'],
+            },
+            sameAs: [
+              // Add social media URLs here if available
+            ],
           }),
         }}
       />

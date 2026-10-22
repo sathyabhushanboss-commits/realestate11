@@ -49,7 +49,7 @@ export default function PanelShell({
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   return (
-    <div className="min-h-screen bg-[#F4F1EA] lg:grid lg:grid-cols-[264px_1fr]">
+    <div className="min-h-screen font-sans bg-[#F4F1EA] lg:grid lg:grid-cols-[264px_1fr]">
       {/* SIDEBAR (desktop) */}
       <aside className="hidden lg:flex flex-col bg-ink text-white/70 sticky top-0 h-screen">
         <div className="px-6 py-7 border-b border-white/10">

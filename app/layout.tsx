@@ -1,6 +1,6 @@
 // app/layout.tsx
-import type { Metadata, Viewport } from 'next'
-import { Cormorant_Garamond, Manrope } from 'next/font/google'
+import type { Metadata } from 'next'
+import { Cormorant_Garamond, Inter, Manrope } from 'next/font/google'
 import './globals.css'
 
 import Navbar from '@/components/Navbar'
@@ -10,6 +10,8 @@ import CustomCursor from '@/components/CustomCursor'
 import ParticleCursor from '@/components/ParticleCursor'
 import HideOnAdmin from '@/components/HideOnAdmin'
 
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
+// Used by the admin/user panels and login screens
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', display: 'swap' })
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -18,12 +20,6 @@ const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
   display: 'swap',
 })
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  themeColor: '#1E0C07',
-}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.srimeghalakshmi.in'),
@@ -88,9 +84,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${cormorant.variable}`}>
-      <body className="bg-ivory font-sans overflow-x-hidden">
-        <Navbar />
+    <html lang="en" className={`${inter.variable} ${manrope.variable} ${cormorant.variable}`}>
+      <body className="bg-[#F8F6F2] overflow-x-hidden">
+        <HideOnAdmin>
+          <Navbar />
+        </HideOnAdmin>
         {children}
         <HideOnAdmin>
           <Footer />

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ---------- Design tokens ---------- */
+/* Design tokens (used by the admin/user panels, login and company pages) */
 @theme inline {
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-cormorant), ui-serif, Georgia, serif;
@@ -18,33 +18,24 @@
 
 :root {
   --ruby: #9B1C1C;
+  --ruby-dark: #8B1E1E;
+
   --gold: #D4A017;
-  --ivory: #F8F5EF;
+  --gold-light: #F7D774;
+
+  --ivory: #F8F6F2;
+
   --bronze: #4A1F12;
-  --ink: #1E0C07;
 }
 
 html {
   scroll-behavior: smooth;
-  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background: var(--ivory);
   color: var(--bronze);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-html,
-body {
-  overflow-x: hidden;
-}
-
-::selection {
-  background: rgba(212, 160, 23, 0.35);
-  color: var(--ink);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
 }
 
 /* The custom cursor only exists on devices with a real mouse */
@@ -55,7 +46,46 @@ body {
   }
 }
 
-/* ---------- Components ---------- */
+@keyframes float {
+
+  0%, 100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes slide {
+
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes marquee {
+
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+html,
+body {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* ---------- Panel & form components ---------- */
 @layer components {
   .container-x {
     width: 100%;
@@ -222,26 +252,6 @@ body {
   }
 }
 
-/* ---------- Motion ---------- */
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -254,28 +264,4 @@ body {
 }
 .animate-fade-up {
   animation: fade-up 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .reveal {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* Leaves room for the mobile bottom action bar */
-@media (max-width: 767px) {
-  body {
-    padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
-  }
 }

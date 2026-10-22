@@ -1,127 +1,174 @@
-import type { Metadata } from 'next'
+'use client'
+
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { ArrowLeft, Check, MapPin } from 'lucide-react'
-import { connectDB } from '@/lib/db'
-import { Property } from '@/lib/models'
-import { getSession } from '@/lib/auth'
-import { ensurePropertiesSeeded, isId, toPropertyJSON } from '@/lib/properties'
-import PropertyGallery from '@/components/PropertyGallery'
+import { useParams } from 'next/navigation'
 import FavoriteButton from '@/components/FavoriteButton'
 import EnquiryForm from '@/components/EnquiryForm'
 
-async function load(id: string) {
-  if (!isId(id)) return null
-  await ensurePropertiesSeeded()
-  const doc = await Property.findById(id).lean()
-  if (!doc) return null
-  if (doc.status === 'draft' && (await getSession())?.role !== 'admin') return null
-  return toPropertyJSON(doc)
+interface Property {
+  _id: string
+  title: string
+  location: string
+  price: string
+  images: string[]
+  sqft: string
+  bedrooms: string
+  description: string
+  measurement: string
+  year?: string
+  features: string[]
+  createdAt: string
 }
 
-export async function generateMetadata({ params }: PageProps<'/properties/[id]'>): Promise<Metadata> {
-  const { id } = await params
-  await connectDB()
-  const p = await load(id)
-  return p ? { title: p.title, description: p.description.slice(0, 160) } : { title: 'Property not found' }
-}
+export default function PropertyDetailPage() {
+  const { id } = useParams()
+  const [property, setProperty] = useState<Property | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [currentImage, setCurrentImage] = useState(0)
 
-export default async function PropertyDetailPage({ params }: PageProps<'/properties/[id]'>) {
-  const { id } = await params
-  await connectDB()
-  const property = await load(id)
-  if (!property) notFound()
+  useEffect(() => {
+    // A 404 means the listing was removed or is a draft
+    fetch(`/api/properties/${id}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then(setProperty)
+      .catch((error) => console.error('Error fetching property:', error))
+      .finally(() => setLoading(false))
+  }, [id])
 
-  const specs = [
-    ['Area', property.measurement],
-    ['Configuration', property.bedrooms],
-    ['Type', property.propertyType],
-    ['Bathrooms', property.bathrooms],
-    ['Balconies', property.balconies],
-    ['Deposit', property.securityDeposit],
-    ['Year built', property.year],
-  ].filter(([, v]) => v)
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F6F2]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#9B1C1C] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-[#4A1F12]">Loading property details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!property) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F6F2]">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-[#9B1C1C]">Property Not Found</h2>
+          <Link href="/properties" className="mt-4 inline-block bg-[#9B1C1C] text-white px-6 py-3 rounded-xl">
+            Back to Properties
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <main className="bg-ivory">
-      <div className="container-x pt-6 md:pt-10">
-        <Link href="/properties" className="inline-flex items-center gap-2 text-sm font-medium text-bronze/70 hover:text-ruby">
-          <ArrowLeft className="w-4 h-4" /> All properties
+    <main className="min-h-screen bg-[#F8F6F2] py-12 px-4 md:px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Back Button */}
+        <Link href="/properties" className="inline-flex items-center gap-2 text-[#9B1C1C] hover:text-[#D4A017] mb-6">
+          ← Back to Properties
         </Link>
-      </div>
 
-      <div className="container-x py-6 md:py-10 grid lg:grid-cols-[1.25fr_1fr] gap-8 lg:gap-14">
-        {/* MEDIA */}
-        <div className="space-y-6 min-w-0">
-          <PropertyGallery images={property.images} title={property.title} />
-          {property.videos.map((src) => (
-            <video key={src} src={src} controls playsInline preload="metadata" className="w-full rounded-2xl bg-black aspect-video" />
-          ))}
-        </div>
-
-        {/* DETAILS */}
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            {property.status === 'sold' && (
-              <span className="bg-ink text-white text-xs font-semibold px-3 py-1 rounded-full">Sold / Rented</span>
-            )}
-            {property.status === 'draft' && (
-              <span className="bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full">Draft — only admins see this</span>
-            )}
-            <p className="flex items-center gap-1.5 text-sm text-gold-deep font-semibold">
-              <MapPin className="w-4 h-4" /> {property.location}
-            </p>
-          </div>
-
-          <h1 className="heading-lg mt-3">{property.title}</h1>
-
-          <div className="mt-5 flex items-center justify-between gap-4 pb-6 border-b border-bronze/10">
-            <p className="font-display text-4xl text-bronze">{property.price}</p>
-            <FavoriteButton
-              propertyId={property._id}
-              className="px-4 py-2.5 rounded-full border border-bronze/15 text-sm font-semibold text-bronze hover:border-ruby"
-            />
-          </div>
-
-          {specs.length > 0 && (
-            <dl className="grid grid-cols-2 gap-px bg-bronze/10 rounded-2xl overflow-hidden mt-6">
-              {specs.map(([label, value]) => (
-                <div key={label} className="bg-white p-4">
-                  <dt className="text-xs text-bronze/55">{label}</dt>
-                  <dd className="mt-1 font-semibold text-bronze">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-
-          {property.description && (
-            <section className="mt-8">
-              <h2 className="font-display text-2xl text-ruby">About this property</h2>
-              <p className="mt-3 lead whitespace-pre-line">{property.description}</p>
-            </section>
-          )}
-
-          {property.features.length > 0 && (
-            <section className="mt-8">
-              <h2 className="font-display text-2xl text-ruby">Key features</h2>
-              <ul className="mt-4 grid sm:grid-cols-2 gap-3">
-                {property.features.map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-bronze">
-                    <span className="w-6 h-6 rounded-full bg-gold/15 text-gold-deep flex items-center justify-center shrink-0">
-                      <Check className="w-3.5 h-3.5" />
-                    </span>
-                    {f}
-                  </li>
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Image Gallery */}
+          <div className="space-y-4">
+            <div className="relative h-[420px] md:h-[560px] rounded-2xl overflow-hidden bg-gray-100">
+              {property.images && property.images.length > 0 && (
+                <Image
+                  src={property.images[currentImage]}
+                  alt={property.title}
+                  fill
+                  className="object-cover"
+                />
+              )}
+            </div>
+            {property.images && property.images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {property.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImage(idx)}
+                    className={`relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 ${
+                      currentImage === idx ? 'ring-2 ring-[#D4A017]' : ''
+                    }`}
+                  >
+                    <Image src={img} alt={`View ${idx + 1}`} fill className="object-cover" />
+                  </button>
                 ))}
-              </ul>
-            </section>
-          )}
+              </div>
+            )}
+          </div>
 
-          <section id="enquire" className="card p-5 sm:p-7 mt-10 scroll-mt-28">
-            <h2 className="font-display text-3xl text-ruby">Enquire about this property</h2>
-            <p className="text-sm text-bronze/60 mt-1 mb-5">We usually respond within a few hours.</p>
-            <EnquiryForm propertyId={property._id} />
-          </section>
+          {/* Property Details */}
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm text-[#D4A017] font-semibold">{property.location}</span>
+                {property.year && (
+                  <span className="text-sm text-gray-500">Built {property.year}</span>
+                )}
+              </div>
+              <h1 className="text-3xl md:text-4xl font-black text-[#9B1C1C]">{property.title}</h1>
+              <div className="flex items-center justify-between gap-4 mt-4">
+                <p className="text-3xl font-bold text-[#D4A017]">{property.price}</p>
+                <FavoriteButton
+                  propertyId={property._id}
+                  className="shrink-0 px-4 py-2 rounded-xl border-2 border-[#9B1C1C]/20 bg-white text-[#9B1C1C] text-sm font-semibold hover:border-[#9B1C1C]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-2xl">
+              <div>
+                <p className="text-[#4A1F12]/50 text-sm">Land/Built-up Area</p>
+                <p className="text-[#9B1C1C] font-bold text-lg">{property.measurement || property.sqft}</p>
+              </div>
+              <div>
+                <p className="text-[#4A1F12]/50 text-sm">Configuration</p>
+                <p className="text-[#9B1C1C] font-bold text-lg">{property.bedrooms}</p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-[#9B1C1C] mb-3">Description</h2>
+              <p className="text-[#4A1F12]/80 leading-relaxed">{property.description}</p>
+            </div>
+
+            {property.features && property.features.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-[#9B1C1C] mb-3">Key Features</h2>
+                <div className="flex flex-wrap gap-2">
+                  {property.features.map((feature, idx) => (
+                    <span key={idx} className="bg-[#D4A017]/10 px-3 py-1 rounded-full text-[#9B1C1C] text-sm">
+                      ✓ {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+              <a
+                href="#enquire"
+                className="flex-1 bg-[#9B1C1C] hover:bg-[#7E1717] text-white py-4 rounded-xl font-semibold text-center transition-all"
+              >
+                Enquire Now
+              </a>
+              <Link
+                href="/appointment"
+                className="flex-1 bg-white border-2 border-[#9B1C1C] text-[#9B1C1C] py-4 rounded-xl font-semibold text-center hover:bg-[#9B1C1C] hover:text-white transition-all"
+              >
+                Schedule Visit
+              </Link>
+            </div>
+
+            {/* ENQUIRY (saved to the admin panel and the user's account) */}
+            <div id="enquire" className="bg-white rounded-2xl p-5 md:p-7 shadow-sm scroll-mt-28">
+              <h2 className="text-xl font-bold text-[#9B1C1C]">Enquire about this property</h2>
+              <p className="text-sm text-[#4A1F12]/60 mt-1 mb-5">Our team will get back to you shortly.</p>
+              <EnquiryForm propertyId={property._id} />
+            </div>
+          </div>
         </div>
       </div>
     </main>
