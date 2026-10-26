@@ -31,7 +31,16 @@ export const metadata: Metadata = {
   
   description: 'Sri Megha Lakshmi Group offers premium land development, construction, property sales, rentals, interiors, e-Khata, and legal services in Bangalore. 15+ years experience, 500+ happy clients.',
   
-  keywords: ['real estate Bangalore', 'construction company Bangalore', 'land development', 'property sales', 'e-Khata services', 'interior design Bangalore'],
+  keywords: [
+    'real estate Bangalore',
+    'construction company Bangalore',
+    'land developers Bangalore',
+    'DTCP approved plots',
+    'property sales Bangalore',
+    'flats for rent Bangalore',
+    'e-Khata services',
+    'interior design Bangalore',
+  ],
   
   authors: [{ name: 'Sri Megha Lakshmi Group' }],
   
@@ -55,10 +64,8 @@ export const metadata: Metadata = {
     siteName: 'Sri Megha Lakshmi Group',
     images: [
       {
-        url: 'https://www.srimeghalakshmi.in/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Sri Megha Lakshmi Group',
+        url: '/services/real-estate-apartments-bengaluru-skyline.webp',
+        alt: 'Sri Megha Lakshmi Group - premium real estate in Bengaluru',
       },
     ],
     locale: 'en_IN',
@@ -69,7 +76,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Sri Megha Lakshmi Group - Best Real Estate in Bangalore',
     description: 'Premium real estate and construction services in Bangalore.',
-    images: ['https://www.srimeghalakshmi.in/twitter-image.jpg'],
+    images: ['/services/real-estate-apartments-bengaluru-skyline.webp'],
   },
   
   verification: {

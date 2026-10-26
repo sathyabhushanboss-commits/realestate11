@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { LEGAL_LINKS } from './LegalPage'
 
 export default function Footer() {
   return (
@@ -218,6 +219,15 @@ export default function Footer() {
             © {new Date().getFullYear()} Sri Megha Lakshmi.
             All rights reserved.
           </p>
+
+          {/* LEGAL */}
+          <nav aria-label="Legal" className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            {LEGAL_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className="text-white/60 text-sm hover:text-[#D4A017] transition-colors">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
           {/* TAGLINE */}
           <div className="flex items-center gap-3">

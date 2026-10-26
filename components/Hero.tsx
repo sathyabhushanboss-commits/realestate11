@@ -3,7 +3,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronDown, CheckCircle2, X, CheckCircle, AlertCircle } from 'lucide-react'
+import { ChevronDown, X, CheckCircle, AlertCircle, ArrowUpRight } from 'lucide-react'
+import { COMPANY_CONTENT, serviceAnchor, serviceSummary } from '@/lib/companyContent'
 
 // Tracks whether the desktop (lg) layout is showing; false during server render
 const DESKTOP_QUERY = '(min-width: 1024px)'
@@ -170,16 +171,7 @@ export default function Hero() {
       title: 'Sri Megha Lakshmi Developers',
       subtitle: 'Premium Land Development & Plotting Company',
       description: 'Sri Megha Lakshmi Developers is one of Bengaluru\'s trusted real estate development companies specializing in land acquisition, site conversion, plotting, and residential and commercial layout development.',
-      services: [
-        { title: 'Land Acquisition Services', desc: 'We identify and acquire strategically located lands suitable for residential layouts, gated communities, villas, commercial developments, and future investment opportunities.' },
-        { title: 'Property Purchasing Assistance', desc: 'Professional support for purchasing agricultural land, residential sites, commercial properties, and investment properties with complete legal verification.' },
-        { title: 'Site Conversion', desc: 'Complete agricultural-to-residential and commercial site conversion services including government approvals and legal processing.' },
-        { title: 'Residential Layout Development', desc: 'Development of premium residential layouts with roads, drainage systems, underground pipelines, water supply, electricity, parks, and modern infrastructure.' },
-        { title: 'Commercial Plot Development', desc: 'Planning and development of commercial plots suitable for offices, showrooms, retail spaces, and investment purposes.' },
-        { title: 'Plot Selling Services', desc: 'Affordable and luxury residential plots for sale with clear titles, legal approvals, and excellent appreciation potential.' },
-        { title: 'DTCP & BMRDA Approved Projects', desc: 'Development and marketing of legally approved layouts ensuring safe investments for buyers.' },
-        { title: 'Investment Consultation', desc: 'Expert guidance for clients looking to invest in land and plots with high future growth.' },
-      ],
+      services: COMPANY_CONTENT['developers'].services,
     },
     {
       href: '/constructions',
@@ -187,16 +179,7 @@ export default function Hero() {
       title: 'Sri Megha Lakshmi Constructions',
       subtitle: 'Residential, Commercial & Interior Construction Experts',
       description: 'Sri Megha Lakshmi Constructions delivers high-quality construction services for residential, commercial, and industrial projects.',
-      services: [
-        { title: 'Residential Construction', desc: 'Complete construction services for independent houses, villas, duplex homes, apartments, and gated community residences.' },
-        { title: 'Commercial Construction', desc: 'Construction of commercial complexes, office buildings, showrooms, retail spaces, hotels, and business infrastructure.' },
-        { title: 'Civil Contract Works', desc: 'Reliable labor and material contract services for all types of construction projects.' },
-        { title: 'Turnkey Construction Projects', desc: 'End-to-end turnkey construction solutions including planning, architecture, approvals, construction, interiors, and handover.' },
-        { title: 'Interior Design Solutions', desc: 'Modern and customized interior works including modular kitchens, wardrobes, false ceilings, TV units, and luxury interiors.' },
-        { title: 'Compound Wall Construction', desc: 'Strong and attractive compound wall construction for layouts, villas, and commercial properties.' },
-        { title: 'Renovation & Remodeling', desc: 'Modern renovation services for old homes, apartments, commercial buildings, and office spaces.' },
-        { title: 'Building Maintenance Services', desc: 'Long-term maintenance services including repairs, waterproofing, painting, and structural maintenance.' },
-      ],
+      services: COMPANY_CONTENT['constructions'].services,
     },
     {
       href: '/real-estate',
@@ -204,17 +187,7 @@ export default function Hero() {
       title: 'Sri Megha Lakshmi Real Estate',
       subtitle: 'Property Sales, Rentals & Legal Documentation Services',
       description: 'Sri Megha Lakshmi Real Estate offers complete real estate solutions including property buying, selling, rentals, leasing, legal documentation, registration, and property consultancy services.',
-      services: [
-        { title: 'Residential Property Sales', desc: 'Buying and selling of residential plots, apartments, villas, independent houses, and luxury properties.' },
-        { title: 'Commercial Property Sales', desc: 'Sales and purchase support for offices, commercial complexes, showrooms, retail spaces, warehouses, and investment properties.' },
-        { title: 'Property Purchase Guidance', desc: 'Professional assistance in selecting, verifying, negotiating, and purchasing legally approved properties.' },
-        { title: 'Residential Rental Services', desc: 'Rental solutions for apartments, villas, independent houses, and family homes in prime locations.' },
-        { title: 'Commercial Rental Services', desc: 'Commercial leasing and rental services for offices, shops, warehouses, and industrial spaces.' },
-        { title: 'e-Khata Services', desc: 'Complete support for e-Khata registration, transfers, corrections, updates, and property tax services.' },
-        { title: 'Property Registration Services', desc: 'Professional registration support including document preparation, EC verification, and registration management.' },
-        { title: 'Legal Documentation Assistance', desc: 'Support for sale deeds, agreements, khata transfer, tax documents, and legal property paperwork.' },
-        { title: 'Real Estate Consultancy', desc: 'Trusted consultancy services for property investment, legal approvals, property valuation, and decision-making.' },
-      ],
+      services: COMPANY_CONTENT['real-estate'].services,
     },
   ]
 
@@ -450,12 +423,23 @@ export default function Hero() {
 
                         <ul className="mt-6 space-y-3">
                           {company.services.map((service) => (
-                            <li key={service.title} className="flex gap-3 rounded-2xl bg-white/10 border border-white/10 p-4">
-                              <CheckCircle2 className="w-5 h-5 shrink-0 text-[#F5D67B] mt-0.5" />
-                              <span>
-                                <span className="block font-bold text-white">{service.title}</span>
-                                <span className="block mt-1 text-sm leading-relaxed text-white/70">{service.desc}</span>
-                              </span>
+                            <li key={service.title}>
+                              <Link
+                                href={`${company.href}#${serviceAnchor(service.title)}`}
+                                tabIndex={expanded ? 0 : -1}
+                                className="flex gap-3 rounded-2xl bg-white/10 border border-white/10 p-3 hover:bg-white/15 transition"
+                              >
+                                <span className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden">
+                                  <Image src={service.image} alt={service.imageAlt} fill sizes="64px" className="object-cover" />
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="flex items-center gap-1 font-bold text-white">
+                                    {service.title}
+                                    <ArrowUpRight className="w-4 h-4 shrink-0 text-[#F5D67B]" />
+                                  </span>
+                                  <span className="block mt-1 text-sm leading-relaxed text-white/70">{serviceSummary(service.description)}</span>
+                                </span>
+                              </Link>
                             </li>
                           ))}
                         </ul>
@@ -497,18 +481,29 @@ export default function Hero() {
               </div>
               <p className="mt-6 md:mt-8 text-base md:text-lg leading-relaxed text-[#4A1F12]/75">{companies[active].description}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 mt-8 md:mt-10">
-                {companies[active].services.slice(0, 8).map((service, idx) => (
-                  <div key={idx} className="bg-[#F8F6F2] border border-[#D4A017]/10 rounded-2xl p-5 hover:bg-white hover:shadow-lg transition-all duration-500">
-                    <div className="flex gap-3">
-                      <div className="min-w-[40px] h-[40px] rounded-xl bg-[#9B1C1C] text-white flex items-center justify-center">
-                        <CheckCircle2 className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-[#9B1C1C]">{service.title}</h3>
-                        <p className="mt-1 text-[#4A1F12]/70 text-sm leading-relaxed">{service.desc}</p>
-                      </div>
-                    </div>
-                  </div>
+                {companies[active].services.map((service) => (
+                  <Link
+                    key={service.title}
+                    href={`${companies[active].href}#${serviceAnchor(service.title)}`}
+                    className="group flex gap-4 bg-[#F8F6F2] border border-[#D4A017]/10 rounded-2xl p-3 pr-5 hover:bg-white hover:shadow-lg hover:border-[#D4A017]/40 transition-all duration-500"
+                  >
+                    <span className="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden">
+                      <Image
+                        src={service.image}
+                        alt={service.imageAlt}
+                        fill
+                        sizes="96px"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                    </span>
+                    <span className="min-w-0 py-1">
+                      <span className="flex items-center gap-1.5 text-lg font-bold text-[#9B1C1C]">
+                        {service.title}
+                        <ArrowUpRight className="w-4 h-4 shrink-0 text-[#D4A017] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </span>
+                      <span className="block mt-1 text-[#4A1F12]/70 text-sm leading-relaxed">{serviceSummary(service.description)}</span>
+                    </span>
+                  </Link>
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 md:mt-10">

@@ -58,6 +58,16 @@ export interface CompanyDoc extends Timestamps {
   priceNote: string
 }
 
+export type OtpPurpose = 'login' | 'register' | 'reset'
+
+export interface OtpDoc extends Timestamps {
+  email: string
+  purpose: OtpPurpose
+  codeHash: string
+  attempts: number
+  expiresAt: Date
+}
+
 // ---------- User ----------
 const userSchema = new Schema<UserDoc>(
   {
@@ -131,6 +141,20 @@ const companySchema = new Schema<CompanyDoc>(
   { timestamps: true }
 )
 
+// ---------- One-time email codes ----------
+const otpSchema = new Schema<OtpDoc>(
+  {
+    email: { type: String, required: true, lowercase: true, trim: true },
+    purpose: { type: String, enum: ['login', 'register', 'reset'], required: true },
+    codeHash: { type: String, required: true },
+    attempts: { type: Number, default: 0 },
+    // MongoDB deletes the document automatically once this time passes
+    expiresAt: { type: Date, required: true, index: { expires: 0 } },
+  },
+  { timestamps: true }
+)
+otpSchema.index({ email: 1, purpose: 1 }, { unique: true })
+
 // Guard against "OverwriteModelError" on hot reload
 function model<T>(name: string, schema: Schema<T>): Model<T> {
   return (mongoose.models[name] as Model<T>) || (mongoose.model(name, schema) as unknown as Model<T>)
@@ -140,3 +164,4 @@ export const User = model<UserDoc>('User', userSchema)
 export const Property = model<PropertyDoc>('Property', propertySchema)
 export const Enquiry = model<EnquiryDoc>('Enquiry', enquirySchema)
 export const Company = model<CompanyDoc>('Company', companySchema)
+export const Otp = model<OtpDoc>('Otp', otpSchema)

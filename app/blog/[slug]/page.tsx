@@ -1,13 +1,29 @@
 // app/blog/[slug]/page.tsx
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { blogs, Blog } from '../data/blogs'
+import { pageMetadata } from '@/lib/seo'
 
 // Generate static params for all blogs
 export async function generateStaticParams() {
   return blogs.map((blog) => ({
     slug: blog.slug,
   }))
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const blog = blogs.find((b) => b.slug === slug)
+  if (!blog) return { title: 'Article not found', robots: { index: false } }
+  return pageMetadata({
+    title: blog.title,
+    description: blog.description,
+    keywords: [...blog.keywords, blog.category],
+    path: `/blog/${blog.slug}`,
+    absoluteTitle: blog.title.length > 45,
+    type: 'article',
+  })
 }
 
 // FAQ Accordion Component

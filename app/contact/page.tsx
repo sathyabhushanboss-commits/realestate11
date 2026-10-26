@@ -1,5 +1,20 @@
 import Link from 'next/link'
 import ContactForm from '@/components/ContactForm'
+import { pageMetadata } from '@/lib/seo'
+
+export const metadata = pageMetadata({
+  title: 'Contact Us | Real Estate Experts in Koramangala, Bangalore',
+  description:
+    'Contact Sri Megha Lakshmi Group in Cauvery Colony, Koramangala, Bengaluru for plots, construction, property sales, rentals, e-Khata and legal services. Call, WhatsApp or send a message.',
+  keywords: [
+    'contact real estate agent Bangalore',
+    'real estate office Koramangala',
+    'property consultant Bengaluru',
+    'construction company contact Bangalore',
+    'Sri Megha Lakshmi contact number',
+  ],
+  path: '/contact',
+})
 
 export default function ContactPage() {
   return (

@@ -2,6 +2,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { connection } from 'next/server'
 import { getCompany, type CompanySlug } from '@/lib/companies'
+import { COMPANY_CONTENT, serviceAnchor } from '@/lib/companyContent'
+
+const SITE_URL = 'https://www.srimeghalakshmi.in'
+
+// Uploaded media is streamed from /api/media and skips the image optimiser
+const isUpload = (src: string) => src.startsWith('/api/')
 
 const STATUS_STYLES: Record<string, string> = {
   available: 'bg-green-100 text-green-700',
@@ -14,15 +20,80 @@ export default async function CompanyPage({ slug }: { slug: CompanySlug }) {
   // Content is edited by the admin at runtime, so always render per request
   await connection()
   const company = await getCompany(slug)
-  const [heroImage] = company.images
+  const content = COMPANY_CONTENT[slug]
+  const heroImage = company.images[0] ?? content.heroImage
+  const heroAlt = company.images[0] ? company.name : content.heroAlt
+  const pageUrl = `${SITE_URL}/${slug}`
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Service',
+        '@id': `${pageUrl}#service`,
+        name: company.name,
+        serviceType: content.serviceType,
+        description: content.seoDescription,
+        url: pageUrl,
+        image: `${SITE_URL}${content.heroImage}`,
+        provider: {
+          '@type': 'RealEstateAgent',
+          name: 'Sri Megha Lakshmi Group',
+          url: SITE_URL,
+          logo: `${SITE_URL}/logo.jpeg`,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Bengaluru',
+            addressRegion: 'Karnataka',
+            addressCountry: 'IN',
+          },
+        },
+        areaServed: content.areas.map((area) => ({ '@type': 'Place', name: `${area}, Bengaluru` })),
+        hasOfferCatalog: {
+          '@type': 'OfferCatalog',
+          name: `${company.name} services`,
+          itemListElement: content.services.map((service) => ({
+            '@type': 'Offer',
+            itemOffered: { '@type': 'Service', name: service.title, description: service.description },
+          })),
+        },
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: content.faqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+        })),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+          { '@type': 'ListItem', position: 2, name: company.name, item: pageUrl },
+        ],
+      },
+    ],
+  }
 
   return (
     <main className="min-h-screen bg-[#F8F6F2]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
+      />
+
       {/* HERO */}
       <section className="relative min-h-[420px] md:min-h-[520px] flex items-end overflow-hidden bg-[#4A1F12]">
-        {heroImage && (
-          <Image src={heroImage} alt={company.name} fill priority unoptimized className="object-cover opacity-70" />
-        )}
+        <Image
+          src={heroImage}
+          alt={heroAlt}
+          fill
+          priority
+          sizes="100vw"
+          unoptimized={isUpload(heroImage)}
+          className="object-cover opacity-70"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         <div className="relative max-w-7xl mx-auto w-full px-4 md:px-6 pt-20 pb-12">
           <p className="text-[#D4A017] uppercase tracking-[0.2em] text-xs md:text-sm font-semibold mb-3">
@@ -68,6 +139,90 @@ export default async function CompanyPage({ slug }: { slug: CompanySlug }) {
             </Link>
           </aside>
         )}
+      </section>
+
+      {/* SERVICES */}
+      <section className="bg-white py-14 md:py-20" aria-labelledby="services-heading">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <p className="text-[#D4A017] uppercase tracking-[0.2em] text-xs md:text-sm font-semibold mb-3">What we do</p>
+          <h2 id="services-heading" className="text-2xl md:text-4xl font-bold text-[#9B1C1C]">
+            Our Services in Bengaluru
+          </h2>
+          <p className="text-[#4A1F12]/80 text-base md:text-lg mt-4 max-w-3xl leading-relaxed">{content.servicesIntro}</p>
+
+          {/* Jump links to each service */}
+          <nav aria-label="Services on this page" className="mt-8">
+            <ul className="flex flex-wrap gap-2.5">
+              {content.services.map((service) => (
+                <li key={service.title}>
+                  <a
+                    href={`#${serviceAnchor(service.title)}`}
+                    className="inline-block bg-[#F8F6F2] border border-[#D4A017]/30 text-[#4A1F12] hover:bg-[#9B1C1C] hover:border-[#9B1C1C] hover:text-white text-sm font-medium px-4 py-2 rounded-full transition"
+                  >
+                    {service.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="mt-12 space-y-14 md:space-y-20">
+            {content.services.map((service, i) => (
+              <article
+                key={service.title}
+                id={serviceAnchor(service.title)}
+                className="scroll-mt-28 grid md:grid-cols-2 gap-8 md:gap-12 items-center"
+              >
+                <div className={`relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg bg-gray-100 ${i % 2 ? 'md:order-2' : ''}`}>
+                  <Image
+                    src={service.image}
+                    alt={service.imageAlt}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-xl md:text-2xl font-bold text-[#4A1F12]">{service.title}</h3>
+                  <p className="text-[#4A1F12]/80 mt-4 leading-relaxed">{service.description}</p>
+                  <ul className="mt-5 space-y-2.5">
+                    {service.points.map((point) => (
+                      <li key={point} className="flex gap-3 text-[#4A1F12]">
+                        <span className="mt-2 w-2 h-2 rounded-full bg-[#D4A017] shrink-0" />
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROCESS */}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 py-14 md:py-16" aria-labelledby="process-heading">
+        <h2 id="process-heading" className="text-2xl md:text-3xl font-bold text-[#9B1C1C] mb-8">
+          How It Works
+        </h2>
+        <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {content.process.map((step, i) => (
+            <li key={step.title} className="bg-white rounded-2xl p-6 border border-[#D4A017]/20 shadow-sm">
+              <span className="text-3xl font-bold text-[#D4A017]">{String(i + 1).padStart(2, '0')}</span>
+              <h3 className="text-lg font-bold text-[#4A1F12] mt-3">{step.title}</h3>
+              <p className="text-[#4A1F12]/75 mt-2 text-sm leading-relaxed">{step.description}</p>
+            </li>
+          ))}
+        </ol>
+
+        <h2 className="text-xl md:text-2xl font-bold text-[#9B1C1C] mt-14 mb-5">Areas We Serve in Bengaluru</h2>
+        <ul className="flex flex-wrap gap-2.5">
+          {content.areas.map((area) => (
+            <li key={area} className="bg-white border border-[#D4A017]/30 text-[#4A1F12] text-sm px-4 py-2 rounded-full">
+              {area}
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* VIDEOS */}
@@ -166,6 +321,28 @@ export default async function CompanyPage({ slug }: { slug: CompanySlug }) {
               {company.priceNote && <p className="text-sm text-[#4A1F12]/60 mt-4">* {company.priceNote}</p>}
             </>
           )}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-4xl mx-auto px-4 md:px-6 py-14 md:py-16" aria-labelledby="faq-heading">
+        <h2 id="faq-heading" className="text-2xl md:text-3xl font-bold text-[#9B1C1C] mb-8">
+          Frequently Asked Questions
+        </h2>
+        <div className="space-y-3">
+          {content.faqs.map((faq, i) => (
+            <details
+              key={faq.question}
+              open={i === 0}
+              className="group bg-white rounded-2xl border border-[#D4A017]/20 shadow-sm"
+            >
+              <summary className="cursor-pointer list-none flex justify-between items-center gap-4 p-5 md:p-6 font-semibold text-[#4A1F12]">
+                <h3 className="text-base md:text-lg">{faq.question}</h3>
+                <span className="text-[#D4A017] text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p className="px-5 md:px-6 pb-5 md:pb-6 -mt-1 text-[#4A1F12]/80 leading-relaxed">{faq.answer}</p>
+            </details>
+          ))}
         </div>
       </section>
 

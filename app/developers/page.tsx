@@ -1,11 +1,7 @@
-import type { Metadata } from 'next'
 import CompanyPage from '@/components/CompanyPage'
+import { companyMetadata } from '@/lib/companyContent'
 
-export const metadata: Metadata = {
-  title: 'Sri Megha Lakshmi Developers',
-  description: 'Approved residential layouts, plots and land development in Bengaluru.',
-  alternates: { canonical: '/developers' },
-}
+export const metadata = companyMetadata('developers')
 
 export default function Page() {
   return <CompanyPage slug="developers" />

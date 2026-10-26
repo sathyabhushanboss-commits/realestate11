@@ -34,7 +34,7 @@ const DEFAULTS: Record<CompanySlug, Company> = {
   developers: {
     slug: 'developers',
     name: 'Sri Megha Lakshmi Developers',
-    tagline: 'Approved layouts and land development across Bengaluru',
+    tagline: 'Premium Land Development & Plotting Company',
     description:
       'Sri Megha Lakshmi Developers plans and develops DTCP & BMRDA approved residential layouts with clear titles, wide roads, underground drainage and complete civic infrastructure. Every plot is backed by verified documentation so families and investors can build with confidence.',
     highlights: [
@@ -52,7 +52,7 @@ const DEFAULTS: Record<CompanySlug, Company> = {
   constructions: {
     slug: 'constructions',
     name: 'Sri Megha Lakshmi Constructions',
-    tagline: 'Quality homes and commercial buildings, built to last',
+    tagline: 'Residential, Commercial & Interior Construction Experts',
     description:
       'Sri Megha Lakshmi Constructions delivers turnkey construction for independent houses, villas, apartments and commercial buildings. From structural design and approvals to finishing and handover, our engineers manage every stage with transparent pricing and branded materials.',
     highlights: [
@@ -70,7 +70,7 @@ const DEFAULTS: Record<CompanySlug, Company> = {
   'real-estate': {
     slug: 'real-estate',
     name: 'Sri Megha Lakshmi Real Estate',
-    tagline: 'Buy, sell and rent with a partner you can trust',
+    tagline: 'Property Sales, Rentals & Legal Documentation Services',
     description:
       'Sri Megha Lakshmi Real Estate helps clients buy, sell and rent residential and commercial properties across Bengaluru. We handle site visits, price negotiation, legal verification, e-Khata and registration so every transaction is smooth and secure.',
     highlights: [
