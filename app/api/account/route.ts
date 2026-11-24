@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { User } from '@/lib/models'
-import { hashPassword, requireApiSession, startSession, verifyPassword } from '@/lib/auth'
+import { db, iso } from '@/lib/db'
+import { findUserById, hashPassword, requireApiSession, startSession, verifyPassword } from '@/lib/auth'
 
 export async function GET() {
   const { session, error } = await requireApiSession()
   if (error) return error
 
-  await connectDB()
-  const user = await User.findById(session.sub).select('name email phone role createdAt').lean()
+  const user = await findUserById(session.sub)
   if (!user) return NextResponse.json({ error: 'Account not found' }, { status: 404 })
-  return NextResponse.json({ ...user, _id: String(user._id) })
+  return NextResponse.json({
+    _id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    createdAt: iso(user.created_at),
+  })
 }
 
 const schema = z
@@ -32,22 +37,23 @@ export async function PATCH(request: NextRequest) {
   const parsed = schema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
-  await connectDB()
-  const user = await User.findById(session.sub).select('+passwordHash')
+  const user = await findUserById(session.sub)
   if (!user) return NextResponse.json({ error: 'Account not found' }, { status: 404 })
 
   const { name, phone, currentPassword, newPassword } = parsed.data
+  let passwordHash = user.password_hash
   if (newPassword) {
-    if (!(await verifyPassword(currentPassword ?? '', user.passwordHash))) {
+    if (!(await verifyPassword(currentPassword ?? '', user.password_hash))) {
       return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 })
     }
-    user.passwordHash = await hashPassword(newPassword)
+    passwordHash = await hashPassword(newPassword)
   }
-  user.name = name
-  user.phone = phone
-  await user.save()
+  const sql = await db()
+  await sql`
+    UPDATE users SET name = ${name}, phone = ${phone}, password_hash = ${passwordHash}, updated_at = now()
+    WHERE id = ${user.id}`
 
   // Re-issue the token so the new name shows everywhere straight away
-  await startSession(user)
+  await startSession({ ...user, name })
   return NextResponse.json({ ok: true })
 }

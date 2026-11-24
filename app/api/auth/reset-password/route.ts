@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { User } from '@/lib/models'
-import { hashPassword, startSession } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { hashPassword, startSession, type UserRecord } from '@/lib/auth'
 import { consumeOtp } from '@/lib/otp'
 
 const schema = z.object({
@@ -22,12 +21,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid or expired code' }, { status: 401 })
   }
 
-  await connectDB()
-  const user = await User.findOneAndUpdate(
-    { email },
-    { passwordHash: await hashPassword(password) },
-    { returnDocument: 'after' }
-  )
+  const sql = await db()
+  const passwordHash = await hashPassword(password)
+  const [user] = (await sql`
+    UPDATE users SET password_hash = ${passwordHash}, updated_at = now()
+    WHERE email = ${email} RETURNING *`) as UserRecord[]
   if (!user) return NextResponse.json({ error: 'Invalid or expired code' }, { status: 401 })
 
   await startSession(user)

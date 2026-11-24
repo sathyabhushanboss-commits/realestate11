@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import type { OtpPurpose } from './models'
+import type { OtpPurpose } from './otp'
 
 // Gmail SMTP with an App Password (free up to ~500 emails a day)
 const transporter = nodemailer.createTransport({

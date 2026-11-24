@@ -1,22 +1,19 @@
 import Link from 'next/link'
 import { requirePageSession } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import { Enquiry, User } from '@/lib/models'
+import { db } from '@/lib/db'
+import { ENQUIRY_SELECT, toEnquiryJSON } from '@/lib/enquiries'
 import { PageHeader } from '@/components/PanelShell'
 import StatusBadge from '@/components/StatusBadge'
 
 export default async function AccountOverview() {
   const session = await requirePageSession()
-  await connectDB()
+  const sql = await db()
 
-  const [user, enquiries] = await Promise.all([
-    User.findById(session.sub).select('favorites').lean(),
-    Enquiry.find({ user: session.sub })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate<{ property: { title: string } | null }>('property', 'title')
-      .lean(),
+  const [[saved], enquiryRows] = await Promise.all([
+    sql`SELECT count(*)::int AS count FROM favorites WHERE user_id = ${session.sub}`,
+    sql.query(`${ENQUIRY_SELECT} WHERE e.user_id = $1 ORDER BY e.created_at DESC LIMIT 5`, [session.sub]),
   ])
+  const enquiries = enquiryRows.map(toEnquiryJSON)
   const firstName = session.name.split(' ')[0]
 
   return (
@@ -26,7 +23,7 @@ export default async function AccountOverview() {
       <div className="grid sm:grid-cols-3 gap-4">
         <Link href="/account/saved" className="card p-6 hover:-translate-y-0.5 transition-transform">
           <p className="text-sm text-bronze/60">Saved properties</p>
-          <p className="font-display text-5xl text-ruby mt-2">{user?.favorites.length ?? 0}</p>
+          <p className="font-display text-5xl text-ruby mt-2">{saved?.count ?? 0}</p>
         </Link>
         <Link href="/account/enquiries" className="card p-6 hover:-translate-y-0.5 transition-transform">
           <p className="text-sm text-bronze/60">Enquiries sent</p>
@@ -58,7 +55,7 @@ export default async function AccountOverview() {
                 <div className="min-w-0">
                   <p className="font-medium text-bronze truncate">{e.property?.title ?? 'General enquiry'}</p>
                   <p className="text-xs text-bronze/50">
-                    {new Date(e.createdAt ?? 0).toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+                    {new Date(e.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })}
                   </p>
                 </div>
                 <StatusBadge status={e.status} />

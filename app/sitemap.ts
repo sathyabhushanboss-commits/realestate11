@@ -1,8 +1,7 @@
 // app/sitemap.ts
 import { MetadataRoute } from 'next'
 import { blogs } from './blog/data/blogs'
-import { connectDB } from '@/lib/db'
-import { Property } from '@/lib/models'
+import { db } from '@/lib/db'
 import { SITE_URL } from '@/lib/seo'
 
 type Entry = MetadataRoute.Sitemap[number]
@@ -25,11 +24,11 @@ const PAGES: [path: string, changeFrequency: Entry['changeFrequency'], priority:
 
 async function propertyEntries(): Promise<MetadataRoute.Sitemap> {
   try {
-    await connectDB()
-    const docs = await Property.find({ status: { $ne: 'draft' } }, { updatedAt: 1 }).lean()
-    return docs.map((doc) => ({
-      url: `${SITE_URL}/properties/${doc._id}`,
-      lastModified: doc.updatedAt,
+    const sql = await db()
+    const rows = await sql`SELECT id, updated_at FROM properties WHERE status <> 'draft'`
+    return rows.map((row) => ({
+      url: `${SITE_URL}/properties/${row.id}`,
+      lastModified: new Date(row.updated_at),
       changeFrequency: 'weekly',
       priority: 0.7,
     }))

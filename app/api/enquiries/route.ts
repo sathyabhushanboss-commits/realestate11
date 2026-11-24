@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { Enquiry } from '@/lib/models'
+import { db } from '@/lib/db'
 import { getSession, requireApiSession } from '@/lib/auth'
 import { isId } from '@/lib/properties'
+import { ENQUIRY_SELECT, toEnquiryJSON } from '@/lib/enquiries'
 
 const schema = z.object({
   name: z.string().trim().min(2, 'Name is required').max(80),
@@ -23,9 +23,18 @@ export async function POST(request: NextRequest) {
   }
 
   const session = await getSession()
-  await connectDB()
-  const doc = await Enquiry.create({ ...parsed.data, user: session?.sub ?? null })
-  return NextResponse.json({ ok: true, id: String(doc._id) }, { status: 201 })
+  const sql = await db()
+  const e = parsed.data
+  // An account or property that no longer exists is stored as null rather than failing the enquiry
+  const [doc] = await sql`
+    INSERT INTO enquiries (user_id, property_id, name, email, phone, message, type, preferred_date)
+    VALUES (
+      (SELECT id FROM users WHERE id = ${session?.sub ?? null}),
+      (SELECT id FROM properties WHERE id = ${e.property ?? null}),
+      ${e.name}, ${e.email}, ${e.phone}, ${e.message}, ${e.type}, ${e.preferredDate}
+    )
+    RETURNING id`
+  return NextResponse.json({ ok: true, id: String(doc.id) }, { status: 201 })
 }
 
 // Admins see every enquiry; users see only their own
@@ -33,15 +42,22 @@ export async function GET(request: NextRequest) {
   const { session, error } = await requireApiSession()
   if (error) return error
 
-  await connectDB()
-  const filter: Record<string, unknown> = session.role === 'admin' ? {} : { user: session.sub }
+  const sql = await db()
+  const where: string[] = []
+  const params: unknown[] = []
+  if (session.role !== 'admin') {
+    params.push(session.sub)
+    where.push(`e.user_id = $${params.length}`)
+  }
   const status = request.nextUrl.searchParams.get('status')
-  if (status) filter.status = status
+  if (status) {
+    params.push(status)
+    where.push(`e.status = $${params.length}`)
+  }
 
-  const docs = await Enquiry.find(filter)
-    .sort({ createdAt: -1 })
-    .populate('property', 'title location')
-    .populate('user', 'name email')
-    .lean()
-  return NextResponse.json(docs)
+  const rows = await sql.query(
+    `${ENQUIRY_SELECT} ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY e.created_at DESC`,
+    params
+  )
+  return NextResponse.json(rows.map(toEnquiryJSON))
 }

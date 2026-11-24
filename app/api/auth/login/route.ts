@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { User } from '@/lib/models'
-import { ensureAdminSeeded, startSession, verifyPassword } from '@/lib/auth'
+import { ensureAdminSeeded, findUserByEmail, startSession, verifyPassword } from '@/lib/auth'
 
 const schema = z.object({
   email: z.string().trim().toLowerCase(),
@@ -16,11 +14,10 @@ export async function POST(request: NextRequest) {
   }
 
   await ensureAdminSeeded()
-  await connectDB()
-  const user = await User.findOne({ email: parsed.data.email }).select('+passwordHash')
+  const user = await findUserByEmail(parsed.data.email)
 
   // Same message either way so attackers can't probe which emails exist
-  if (!user || !(await verifyPassword(parsed.data.password, user.passwordHash))) {
+  if (!user || !(await verifyPassword(parsed.data.password, user.password_hash))) {
     return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
   }
 

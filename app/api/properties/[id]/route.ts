@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { connectDB } from '@/lib/db'
-import { Enquiry, Property, User } from '@/lib/models'
+import { db } from '@/lib/db'
 import { getSession, requireApiSession } from '@/lib/auth'
-import { ensurePropertiesSeeded, isId, propertyInput, toPropertyJSON } from '@/lib/properties'
+import { ensurePropertiesSeeded, findProperty, isId, propertyInput, toPropertyJSON, updateProperty } from '@/lib/properties'
 
 const notFound = () => NextResponse.json({ error: 'Property not found' }, { status: 404 })
 
@@ -11,11 +10,11 @@ export async function GET(_request: NextRequest, ctx: RouteContext<'/api/propert
   if (!isId(id)) return notFound()
 
   await ensurePropertiesSeeded()
-  const doc = await Property.findById(id).lean()
+  const row = await findProperty(id)
   const session = await getSession()
   // Drafts are only visible to admins
-  if (!doc || (doc.status === 'draft' && session?.role !== 'admin')) return notFound()
-  return NextResponse.json(toPropertyJSON(doc))
+  if (!row || (row.status === 'draft' && session?.role !== 'admin')) return notFound()
+  return NextResponse.json(toPropertyJSON(row))
 }
 
 export async function PUT(request: NextRequest, ctx: RouteContext<'/api/properties/[id]'>) {
@@ -30,10 +29,9 @@ export async function PUT(request: NextRequest, ctx: RouteContext<'/api/properti
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
-  await connectDB()
-  const doc = await Property.findByIdAndUpdate(id, parsed.data, { returnDocument: 'after', runValidators: true }).lean()
-  if (!doc) return notFound()
-  return NextResponse.json(toPropertyJSON(doc))
+  const row = await updateProperty(id, parsed.data)
+  if (!row) return notFound()
+  return NextResponse.json(toPropertyJSON(row))
 }
 
 export async function DELETE(_request: NextRequest, ctx: RouteContext<'/api/properties/[id]'>) {
@@ -43,14 +41,9 @@ export async function DELETE(_request: NextRequest, ctx: RouteContext<'/api/prop
   const { id } = await ctx.params
   if (!isId(id)) return notFound()
 
-  await connectDB()
-  const doc = await Property.findByIdAndDelete(id)
-  if (!doc) return notFound()
-
-  // Clean up references so saved lists and enquiries don't point at nothing
-  await Promise.all([
-    User.updateMany({ favorites: id }, { $pull: { favorites: id } }),
-    Enquiry.updateMany({ property: id }, { $set: { property: null } }),
-  ])
+  const sql = await db()
+  // Foreign keys remove it from saved lists and detach it from enquiries
+  const removed = await sql`DELETE FROM properties WHERE id = ${id} RETURNING id`
+  if (removed.length === 0) return notFound()
   return NextResponse.json({ ok: true })
 }

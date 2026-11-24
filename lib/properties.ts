@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { isValidObjectId } from 'mongoose'
-import { connectDB } from './db'
-import { Property, type PropertyDoc } from './models'
+import { db, iso, isId, type Row } from './db'
+
+export { isId }
 
 export const PROPERTY_STATUSES = ['published', 'draft', 'sold'] as const
 
@@ -52,33 +52,61 @@ export interface PropertyJSON extends PropertyInput {
   updatedAt: string
 }
 
-// Lean Mongo document -> plain JSON safe to send to client components
-export function toPropertyJSON(d: PropertyDoc & { _id: unknown }): PropertyJSON {
+// Database row -> plain JSON safe to send to client components
+export function toPropertyJSON(r: Row): PropertyJSON {
   return {
-    _id: String(d._id),
-    title: d.title,
-    location: d.location,
-    price: d.price,
-    propertyType: d.propertyType ?? '',
-    measurement: d.measurement ?? '',
-    bedrooms: d.bedrooms ?? '',
-    bathrooms: d.bathrooms ?? '',
-    balconies: d.balconies ?? '',
-    securityDeposit: d.securityDeposit ?? '',
-    year: d.year ?? '',
-    description: d.description ?? '',
-    features: d.features ?? [],
-    images: d.images ?? [],
-    videos: d.videos ?? [],
-    status: d.status ?? 'published',
-    featured: !!d.featured,
-    createdAt: new Date(d.createdAt ?? 0).toISOString(),
-    updatedAt: new Date(d.updatedAt ?? 0).toISOString(),
+    _id: String(r.id),
+    title: String(r.title),
+    location: String(r.location),
+    price: String(r.price),
+    propertyType: (r.property_type as string) ?? '',
+    measurement: (r.measurement as string) ?? '',
+    bedrooms: (r.bedrooms as string) ?? '',
+    bathrooms: (r.bathrooms as string) ?? '',
+    balconies: (r.balconies as string) ?? '',
+    securityDeposit: (r.security_deposit as string) ?? '',
+    year: (r.year as string) ?? '',
+    description: (r.description as string) ?? '',
+    features: (r.features as string[]) ?? [],
+    images: (r.images as string[]) ?? [],
+    videos: (r.videos as string[]) ?? [],
+    status: (r.status as PropertyInput['status']) ?? 'published',
+    featured: !!r.featured,
+    createdAt: iso(r.created_at),
+    updatedAt: iso(r.updated_at),
   }
 }
 
-export function isId(value: string) {
-  return isValidObjectId(value)
+export async function insertProperty(p: PropertyInput) {
+  const sql = await db()
+  const rows = await sql`
+    INSERT INTO properties (title, location, price, property_type, measurement, bedrooms, bathrooms, balconies,
+      security_deposit, year, description, features, images, videos, status, featured)
+    VALUES (${p.title}, ${p.location}, ${p.price}, ${p.propertyType}, ${p.measurement}, ${p.bedrooms}, ${p.bathrooms},
+      ${p.balconies}, ${p.securityDeposit}, ${p.year}, ${p.description}, ${p.features}, ${p.images}, ${p.videos},
+      ${p.status}, ${p.featured})
+    RETURNING *`
+  return rows[0]
+}
+
+export async function updateProperty(id: string, p: PropertyInput) {
+  const sql = await db()
+  const rows = await sql`
+    UPDATE properties SET title = ${p.title}, location = ${p.location}, price = ${p.price},
+      property_type = ${p.propertyType}, measurement = ${p.measurement}, bedrooms = ${p.bedrooms},
+      bathrooms = ${p.bathrooms}, balconies = ${p.balconies}, security_deposit = ${p.securityDeposit},
+      year = ${p.year}, description = ${p.description}, features = ${p.features}, images = ${p.images},
+      videos = ${p.videos}, status = ${p.status}, featured = ${p.featured}, updated_at = now()
+    WHERE id = ${id}
+    RETURNING *`
+  return rows[0] as Row | undefined
+}
+
+export async function findProperty(id: string) {
+  if (!isId(id)) return undefined
+  const sql = await db()
+  const rows = await sql`SELECT * FROM properties WHERE id = ${id}`
+  return rows[0] as Row | undefined
 }
 
 // The four listings that used to be hard-coded, inserted once into an empty collection
@@ -136,9 +164,10 @@ const SEED: Partial<PropertyInput>[] = [
 let seeded = false
 export async function ensurePropertiesSeeded() {
   if (seeded) return
-  await connectDB()
-  if ((await Property.estimatedDocumentCount()) === 0) {
-    await Property.insertMany(SEED.map((p) => propertyInput.parse(p)))
+  const sql = await db()
+  const [{ count }] = await sql`SELECT count(*)::int AS count FROM properties`
+  if (count === 0) {
+    for (const p of SEED) await insertProperty(propertyInput.parse(p))
   }
   seeded = true
 }

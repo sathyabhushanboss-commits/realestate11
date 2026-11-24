@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
-import { connectDB } from '@/lib/db'
-import { Property } from '@/lib/models'
-import { isId } from '@/lib/properties'
+import { findProperty, isId, toPropertyJSON } from '@/lib/properties'
 import { pageMetadata } from '@/lib/seo'
 
 // The page itself is a client component, so its metadata is generated here
@@ -9,8 +7,8 @@ export async function generateMetadata({ params }: LayoutProps<'/properties/[id]
   const { id } = await params
   if (!isId(id)) return { title: 'Property not found', robots: { index: false } }
 
-  await connectDB()
-  const property = await Property.findById(id).lean()
+  const row = await findProperty(id).catch(() => undefined)
+  const property = row ? toPropertyJSON(row) : null
   if (!property || property.status === 'draft') return { title: 'Property not found', robots: { index: false } }
 
   const facts = [...new Set([property.propertyType, property.measurement, property.bedrooms].filter(Boolean))].join(' · ')

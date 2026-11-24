@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { User } from '@/lib/models'
-import { hashPassword, startSession } from '@/lib/auth'
+import { createUser, findUserByEmail, startSession } from '@/lib/auth'
 import { consumeOtp } from '@/lib/otp'
 
 const schema = z.object({
@@ -19,9 +17,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
-  await connectDB()
   const { name, email, phone, password, code } = parsed.data
-  if (await User.exists({ email })) {
+  if (await findUserByEmail(email)) {
     return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
   }
   // The emailed code proves the person owns this address
@@ -30,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Public sign-ups are always regular users; admins are promoted from the admin panel
-  const user = await User.create({ name, email, phone, passwordHash: await hashPassword(password), role: 'user' })
+  const user = await createUser({ name, email, phone, password, role: 'user' })
   await startSession(user)
   return NextResponse.json({ ok: true, role: user.role }, { status: 201 })
 }

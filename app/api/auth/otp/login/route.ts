@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { User } from '@/lib/models'
-import { startSession } from '@/lib/auth'
+import { findUserByEmail, startSession } from '@/lib/auth'
 import { consumeOtp } from '@/lib/otp'
 
 const schema = z.object({
@@ -22,8 +20,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid or expired code' }, { status: 401 })
   }
 
-  await connectDB()
-  const user = await User.findOne({ email })
+  const user = await findUserByEmail(email)
   if (!user) return NextResponse.json({ error: 'Invalid or expired code' }, { status: 401 })
 
   await startSession(user)

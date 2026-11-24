@@ -1,8 +1,7 @@
 import path from 'path'
-import { connectDB } from './db'
-import { Company as CompanyModel } from './models'
+import { db, iso } from './db'
 
-// Uploaded media stays on disk; page content lives in MongoDB
+// Uploaded media stays on disk; page content lives in Postgres
 export const STORAGE_DIR = path.join(process.cwd(), 'storage')
 export const UPLOADS_DIR = path.join(STORAGE_DIR, 'uploads')
 
@@ -92,29 +91,37 @@ export function isCompanySlug(value: string): value is CompanySlug {
 }
 
 async function readAll(): Promise<Record<CompanySlug, Company>> {
-  await connectDB()
-  const docs = await CompanyModel.find({ slug: { $in: COMPANY_SLUGS } }).lean()
   const result = structuredClone(DEFAULTS)
-  for (const doc of docs) {
-    const slug = doc.slug as CompanySlug
+  let rows: Record<string, any>[] // eslint-disable-line @typescript-eslint/no-explicit-any
+  try {
+    const sql = await db()
+    rows = await sql`SELECT * FROM companies WHERE slug = ANY(${[...COMPANY_SLUGS]})`
+  } catch (error) {
+    // Public company pages still render with their default content if the database is down
+    console.error('Companies: database unavailable', error)
+    return result
+  }
+  for (const row of rows) {
+    const slug = row.slug as CompanySlug
+    const priceList = (row.price_list ?? []) as Partial<PriceItem>[]
     result[slug] = {
       ...DEFAULTS[slug],
-      name: doc.name,
-      tagline: doc.tagline,
-      description: doc.description,
-      highlights: doc.highlights,
-      images: doc.images,
-      videos: doc.videos,
-      priceList: doc.priceList.map((row) => ({
-        id: row.id ?? '',
-        type: row.type ?? '',
-        area: row.area ?? '',
-        price: row.price ?? '',
-        status: row.status ?? '',
+      name: row.name,
+      tagline: row.tagline,
+      description: row.description,
+      highlights: row.highlights,
+      images: row.images,
+      videos: row.videos,
+      priceList: priceList.map((item) => ({
+        id: item.id ?? '',
+        type: item.type ?? '',
+        area: item.area ?? '',
+        price: item.price ?? '',
+        status: item.status ?? '',
       })),
-      priceNote: doc.priceNote,
+      priceNote: row.price_note,
       slug,
-      updatedAt: (doc.updatedAt ?? new Date(0)).toISOString(),
+      updatedAt: iso(row.updated_at),
     }
   }
   return result
@@ -131,7 +138,15 @@ export async function getCompany(slug: CompanySlug): Promise<Company> {
 }
 
 export async function saveCompany(slug: CompanySlug, data: Omit<Company, 'slug' | 'updatedAt'>) {
-  await connectDB()
-  await CompanyModel.findOneAndUpdate({ slug }, { ...data, slug }, { upsert: true, runValidators: true })
+  const sql = await db()
+  const priceList = JSON.stringify(data.priceList)
+  await sql`
+    INSERT INTO companies (slug, name, tagline, description, highlights, images, videos, price_list, price_note, updated_at)
+    VALUES (${slug}, ${data.name}, ${data.tagline}, ${data.description}, ${data.highlights}, ${data.images},
+      ${data.videos}, ${priceList}::jsonb, ${data.priceNote}, now())
+    ON CONFLICT (slug) DO UPDATE SET
+      name = EXCLUDED.name, tagline = EXCLUDED.tagline, description = EXCLUDED.description,
+      highlights = EXCLUDED.highlights, images = EXCLUDED.images, videos = EXCLUDED.videos,
+      price_list = EXCLUDED.price_list, price_note = EXCLUDED.price_note, updated_at = now()`
   return getCompany(slug)
 }

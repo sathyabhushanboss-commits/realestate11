@@ -2,8 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { connectDB } from './db'
-import { User } from './models'
+import { db } from './db'
 import { AUTH_COOKIE, SESSION_MAX_AGE, signSession, verifySession, type Role, type SessionPayload } from './jwt'
 
 export type { Role, SessionPayload }
@@ -16,8 +15,40 @@ export async function verifyPassword(password: string, hash: string) {
   return bcrypt.compare(password, hash)
 }
 
-export async function startSession(user: { _id: unknown; role: Role; name: string; email: string }) {
-  const token = signSession({ sub: String(user._id), role: user.role, name: user.name, email: user.email })
+export interface UserRecord {
+  id: string
+  name: string
+  email: string
+  phone: string
+  role: Role
+  password_hash: string
+  created_at: Date
+}
+
+export async function findUserByEmail(email: string) {
+  const sql = await db()
+  const rows = await sql`SELECT * FROM users WHERE email = ${email.toLowerCase()}`
+  return rows[0] as UserRecord | undefined
+}
+
+export async function findUserById(id: string) {
+  const sql = await db()
+  const rows = await sql`SELECT * FROM users WHERE id = ${id}`
+  return rows[0] as UserRecord | undefined
+}
+
+export async function createUser(data: { name: string; email: string; phone?: string; password: string; role: Role }) {
+  const sql = await db()
+  const passwordHash = await hashPassword(data.password)
+  const rows = await sql`
+    INSERT INTO users (name, email, phone, password_hash, role)
+    VALUES (${data.name}, ${data.email.toLowerCase()}, ${data.phone ?? ''}, ${passwordHash}, ${data.role})
+    RETURNING *`
+  return rows[0] as UserRecord
+}
+
+export async function startSession(user: { id: string; role: Role; name: string; email: string }) {
+  const token = signSession({ sub: user.id, role: user.role, name: user.name, email: user.email })
   const cookieStore = await cookies()
   cookieStore.set(AUTH_COOKIE, token, {
     httpOnly: true,
@@ -68,12 +99,12 @@ export async function ensureAdminSeeded() {
   const password = process.env.ADMIN_PASSWORD
   if (!email || !password) return
 
-  await connectDB()
-  if (await User.exists({ role: 'admin' })) return
-  await User.create({
-    name: 'Administrator',
-    email,
-    passwordHash: await hashPassword(password),
-    role: 'admin',
-  })
+  const sql = await db()
+  const admins = await sql`SELECT 1 FROM users WHERE role = 'admin' LIMIT 1`
+  if (admins.length > 0) return
+  const passwordHash = await hashPassword(password)
+  await sql`
+    INSERT INTO users (name, email, password_hash, role)
+    VALUES ('Administrator', ${email}, ${passwordHash}, 'admin')
+    ON CONFLICT (email) DO NOTHING`
 }

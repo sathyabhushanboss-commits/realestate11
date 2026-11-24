@@ -1,16 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { User } from '@/lib/models'
-import { hashPassword, requireApiSession } from '@/lib/auth'
+import { db, iso } from '@/lib/db'
+import { createUser, findUserByEmail, requireApiSession } from '@/lib/auth'
 
 export async function GET() {
   const { error } = await requireApiSession('admin')
   if (error) return error
 
-  await connectDB()
-  const users = await User.find().sort({ createdAt: -1 }).select('name email phone role createdAt favorites').lean()
-  return NextResponse.json(users.map((u) => ({ ...u, _id: String(u._id), favorites: u.favorites.length })))
+  const sql = await db()
+  const rows = await sql`
+    SELECT u.id, u.name, u.email, u.phone, u.role, u.created_at,
+           (SELECT count(*)::int FROM favorites f WHERE f.user_id = u.id) AS favorites
+    FROM users u ORDER BY u.created_at DESC`
+  return NextResponse.json(
+    rows.map((u) => ({
+      _id: u.id,
+      name: u.name,
+      email: u.email,
+      phone: u.phone,
+      role: u.role,
+      createdAt: iso(u.created_at),
+      favorites: u.favorites,
+    }))
+  )
 }
 
 const createSchema = z.object({
@@ -29,14 +41,9 @@ export async function POST(request: NextRequest) {
   const parsed = createSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
-  await connectDB()
-  const { password, ...rest } = parsed.data
-  if (await User.exists({ email: rest.email })) {
+  if (await findUserByEmail(parsed.data.email)) {
     return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
   }
-  const user = await User.create({ ...rest, passwordHash: await hashPassword(password) })
-  return NextResponse.json(
-    { _id: String(user._id), name: user.name, email: user.email, role: user.role },
-    { status: 201 }
-  )
+  const user = await createUser(parsed.data)
+  return NextResponse.json({ _id: user.id, name: user.name, email: user.email, role: user.role }, { status: 201 })
 }

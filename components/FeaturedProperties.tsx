@@ -1,18 +1,23 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { connection } from 'next/server'
-import { connectDB } from '@/lib/db'
-import { Property } from '@/lib/models'
-import { ensurePropertiesSeeded, toPropertyJSON } from '@/lib/properties'
+import { db } from '@/lib/db'
+import { ensurePropertiesSeeded, toPropertyJSON, type PropertyJSON } from '@/lib/properties'
 
 // Latest / featured listings from the admin panel, in the site's card style
 export default async function FeaturedProperties() {
   await connection()
-  await ensurePropertiesSeeded()
-  await connectDB()
-  const properties = (
-    await Property.find({ status: 'published' }).sort({ featured: -1, createdAt: -1 }).limit(3).lean()
-  ).map(toPropertyJSON)
+  let properties: PropertyJSON[] = []
+  try {
+    await ensurePropertiesSeeded()
+    const sql = await db()
+    const rows = await sql`
+      SELECT * FROM properties WHERE status = 'published' ORDER BY featured DESC, created_at DESC LIMIT 3`
+    properties = rows.map(toPropertyJSON)
+  } catch (error) {
+    // Never take the whole home page down because the database is unreachable
+    console.error('FeaturedProperties: database unavailable', error)
+  }
 
   if (properties.length === 0) return null
 

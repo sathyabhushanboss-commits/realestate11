@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { User } from '@/lib/models'
-import { ensureAdminSeeded } from '@/lib/auth'
+import { ensureAdminSeeded, findUserByEmail } from '@/lib/auth'
 import { issueOtp } from '@/lib/otp'
 
 const schema = z.object({
@@ -18,8 +16,7 @@ export async function POST(request: NextRequest) {
   const { email, purpose } = parsed.data
 
   await ensureAdminSeeded()
-  await connectDB()
-  const exists = await User.exists({ email })
+  const exists = !!(await findUserByEmail(email))
 
   if (purpose === 'register' && exists) {
     return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })

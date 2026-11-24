@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@neondatabase/serverless": "^1.2.1",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/supabase-js": "^2.105.4",
     "bcryptjs": "^3.0.3",
@@ -18,7 +19,6 @@
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.16.0",
-    "mongoose": "^9.6.3",
     "next": "16.2.6",
     "nodemailer": "^8.0.10",
     "react": "19.2.4",

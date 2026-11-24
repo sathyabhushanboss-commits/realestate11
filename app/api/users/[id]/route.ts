@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { connectDB } from '@/lib/db'
-import { Enquiry, User } from '@/lib/models'
+import { db } from '@/lib/db'
 import { requireApiSession } from '@/lib/auth'
 import { isId } from '@/lib/properties'
 
@@ -27,9 +26,14 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<'/api/users/
     return NextResponse.json({ error: 'You cannot remove your own admin access' }, { status: 400 })
   }
 
-  await connectDB()
-  const user = await User.findByIdAndUpdate(id, parsed.data, { returnDocument: 'after' }).select('name email phone role').lean()
-  return user ? NextResponse.json({ ...user, _id: String(user._id) }) : notFound()
+  const { name = null, phone = null, role = null } = parsed.data
+  const sql = await db()
+  const [user] = await sql`
+    UPDATE users SET name = COALESCE(${name}, name), phone = COALESCE(${phone}, phone),
+      role = COALESCE(${role}, role), updated_at = now()
+    WHERE id = ${id}
+    RETURNING id, name, email, phone, role`
+  return user ? NextResponse.json({ ...user, _id: user.id }) : notFound()
 }
 
 export async function DELETE(_request: NextRequest, ctx: RouteContext<'/api/users/[id]'>) {
@@ -42,10 +46,8 @@ export async function DELETE(_request: NextRequest, ctx: RouteContext<'/api/user
     return NextResponse.json({ error: 'You cannot delete your own account here' }, { status: 400 })
   }
 
-  await connectDB()
-  const user = await User.findByIdAndDelete(id)
-  if (!user) return notFound()
-  // Enquiries are business records, so keep them but detach the deleted account
-  await Enquiry.updateMany({ user: id }, { $set: { user: null } })
-  return NextResponse.json({ ok: true })
+  const sql = await db()
+  // Foreign keys keep enquiries (business records) but detach them from the deleted account
+  const removed = await sql`DELETE FROM users WHERE id = ${id} RETURNING id`
+  return removed.length > 0 ? NextResponse.json({ ok: true }) : notFound()
 }

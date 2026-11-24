@@ -1,21 +1,24 @@
 import Link from 'next/link'
-import { connectDB } from '@/lib/db'
-import { Enquiry, Property, User } from '@/lib/models'
+import { db } from '@/lib/db'
+import { ENQUIRY_SELECT, toEnquiryJSON } from '@/lib/enquiries'
 import { ensurePropertiesSeeded } from '@/lib/properties'
 import { PageHeader } from '@/components/PanelShell'
 import StatusBadge from '@/components/StatusBadge'
 
 export default async function AdminDashboard() {
   await ensurePropertiesSeeded()
-  await connectDB()
+  const sql = await db()
 
-  const [properties, published, users, newEnquiries, recent] = await Promise.all([
-    Property.countDocuments(),
-    Property.countDocuments({ status: 'published' }),
-    User.countDocuments({ role: 'user' }),
-    Enquiry.countDocuments({ status: 'new' }),
-    Enquiry.find().sort({ createdAt: -1 }).limit(6).populate<{ property: { title: string } | null }>('property', 'title').lean(),
+  const [[counts], recentRows] = await Promise.all([
+    sql`
+      SELECT (SELECT count(*)::int FROM properties) AS properties,
+             (SELECT count(*)::int FROM properties WHERE status = 'published') AS published,
+             (SELECT count(*)::int FROM users WHERE role = 'user') AS users,
+             (SELECT count(*)::int FROM enquiries WHERE status = 'new') AS new_enquiries`,
+    sql.query(`${ENQUIRY_SELECT} ORDER BY e.created_at DESC LIMIT 6`),
   ])
+  const { properties, published, users, new_enquiries: newEnquiries } = counts as Record<string, number>
+  const recent = recentRows.map(toEnquiryJSON)
 
   const stats = [
     { label: 'Total properties', value: properties, href: '/admin/properties' },
